@@ -1,0 +1,31 @@
+/* Default background (light mode) */
+body {
+    background: linear-gradient(to bottom, rgb(77, 116, 241), rgb(201, 166, 218)); /* Default light mode background */
+    height: 100vh;
+    margin: 0;
+    display: block;
+    transition: background 0.6s ease; /* Smooth transition for background changes */
+}
+
+.top-bar {
+    width: 90%; /* Adjust width as needed */
+    height: 70px; /* Adjust height as needed */
+    background: rgb(51, 92, 226); /* Default light mode background */
+    border-radius: 35px; /* Makes the bar rounded */
+    margin: 20px auto; /* Center horizontally and add spacing from the top */
+    position: relative; /* Keep it in the normal document flow */
+    transition: background 0.6s ease; /* Smooth transition for top bar background changes */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); /* Initial outline */
+}
+
+.center-logo {
+    /* Ensure the logo is displayed properly */
+    display: block;
+    width: 35vw; /* Set the width to 35% of the viewport width */
+    height: auto; /* Maintain aspect ratio */
+    max-width: 800px; /* Optional: Set a maximum width */
+    max-height: 800px; /* Optional: Set a maximum height */
+    margin: 10px auto; /* Add spacing below the top bar and center horizontally */
+    position: relative; /* Position it relative to the top bar */
+    transition: transform 0.1s ease; /* Smooth transition for scaling */
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Background</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="top-bar"></div>
+    <a>
+        <img src="assets/gui_logo.svg" alt="Logo" class="center-logo">
+    </a>
+    <script>
+        const logo = document.querySelector('.center-logo');
+
+        // Add a double-click event listener to the logo
+        logo.addEventListener('dblclick', () => {
+            // Redirect to the specified URL
+            window.open('https://github.com/qxdFox/Aiodob-Client', '_blank');
+        });
+
+        // Make the logo move up and down
+        let angle = 0; // Angle for the sine wave
+
+        function moveLogo() {
+            // Calculate the vertical offset using a sine wave
+            const offsetY = Math.sin(angle) * 10; // Adjust amplitude (10px) as needed
+            angle += 0.005; // Adjust speed (smaller values = slower)
+
+            // Check if the logo is being hovered
+            const isHovered = logo.matches(':hover');
+            const scale = isHovered ? 1.05 : 1; // Scale up if hovered, otherwise normal size
+
+            // Apply both vertical movement and scaling
+            logo.style.transform = `translateY(${offsetY}px) scale(${scale})`;
+
+            // Repeat the movement
+            requestAnimationFrame(moveLogo);
+        }
+
+        // Start the movement
+        moveLogo();
+
+        document.addEventListener('mousemove', (event) => {
+            const topBar = document.querySelector('.top-bar');
+            const mouseX = event.clientX;
+            const mouseY = event.clientY;
+
+            // Calculate the position of the mouse relative to the top barrgb
+            const topBarRect = topBar.getBoundingClientRect();
+            const xPercent = ((mouseX - topBarRect.left) / topBarRect.width) * 100;
+            const yPercent = ((mouseY - topBarRect.top) / topBarRect.height) * 100;
+
+            // Detect the current appearance mode (light or dark)
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            // Set the gradient based on the appearance mode
+            const lightGradient = `radial-gradient(circle 250px at ${xPercent}% ${yPercent}%, rgb(51, 92, 226, 0.1), rgb(51, 92, 226))`;
+            const darkGradient = `radial-gradient(circle 250px at ${xPercent}% ${yPercent}%, rgb(30, 60, 120, 0.1), rgb(15, 30, 60))`;
+
+            topBar.style.background = isDarkMode ? darkGradient : lightGradient;
+        });
+
+        const topBar = document.querySelector('.top-bar');
+        const body = document.body;
+
+        // Function to update the top bar and body background based on the current theme
+        function updateTheme() {
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            // Update the top bar background
+            topBar.style.background = isDarkMode ? 'rgb(15, 30, 60)' : 'rgb(51, 92, 226)';
+
+            // Update the body background
+            body.style.background = isDarkMode ? 'linear-gradient(to bottom, rgb(30, 30, 60), rgb(15, 15, 30))' : 'linear-gradient(to bottom, rgb(77, 116, 241), rgb(201, 166, 218))';
+            
+        }
+
+        // Initial update based on the current theme
+        updateTheme();
+
+        // Listen for changes in the user's light/dark mode preference
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme);
+    </script>
+</body>
+</html>
