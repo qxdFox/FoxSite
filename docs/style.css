@@ -29,3 +29,54 @@ body {
     position: relative; /* Position it relative to the top bar */
     transition: transform 0.1s ease; /* Smooth transition for scaling */
 }
+
+.download-box {
+    width: 300px; /* Fixed width */
+    height: auto; /* Allow height to adjust based on content */
+    background: rgb(51, 92, 226); /* Match the background color of the top bar */
+    border-radius: 35px; /* Same rounded corners as the top bar */
+    margin: 180px auto; /* Center horizontally and add spacing from the top */
+    padding: 15px; /* Add padding for content */
+    position: relative; /* Allow the box to flow naturally in the document */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); /* Same shadow as the top bar */
+    text-align: center; /* Center the text inside the box */
+    color: white; /* Make the text color white for better contrast */
+    font-family: Arial, sans-serif; /* Use a clean font */
+    transition: background 0.6s ease; /* Smooth transition for background changes */
+}
+
+#os-display {
+    margin-bottom: 10px;
+    font-size: 16px; /* Slightly smaller font size */
+    font-weight: bold;
+}
+
+#download-button {
+    padding: 12px 24px; /* Increase padding for a larger button */
+    font-size: 18px; /* Increase font size for better readability */
+    cursor: pointer;
+    border: none;
+    border-radius: 8px; /* Slightly larger border radius for a rounded look */
+    background-color: rgb(24, 48, 121); /* Keep the button's background color */
+    color: rgb(255, 255, 255); /* Keep the text color white */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#download-button:hover {
+    background-color: rgb(30, 60, 120); /* Darker shade for hover effect */
+    color: white; /* Keep the text color white on hover */
+}
+
+.not-your-os {
+    display: block;
+    margin-bottom: 10px; /* Add spacing between the link and the button */
+    font-size: 14px; /* Slightly smaller font size */
+    color: white; /* Match the text color of the box */
+    text-decoration: underline; /* Add underline to indicate it's a link */
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.not-your-os:hover {
+    color: rgb(200, 200, 255); /* Change color on hover for better visibility */
+}
