@@ -1,17 +1,19 @@
 /* Default background (light mode) */
 body {
-    background: linear-gradient(to bottom, rgb(77, 116, 241), rgb(201, 166, 218)); /* Default light mode background */
-    height: 100vh;
+    display: flex;
+    flex-direction: column; /* Arrange content vertically */
+    justify-content: space-between; /* Distribute space between elements */
+    min-height: 100vh; /* Ensure the body covers the full viewport height */
     margin: 0;
-    display: block;
+    background: linear-gradient(to bottom, rgb(77, 116, 241), rgb(201, 166, 218)); /* Default light mode background */
     transition: background 0.6s ease; /* Smooth transition for background changes */
 }
 
 .top-bar {
     width: 90%; /* Adjust width as needed */
-    height: 70px; /* Adjust height as needed */
+    height: 90px; /* Adjust height as needed */
     background: rgb(51, 92, 226); /* Default light mode background */
-    border-radius: 35px; /* Makes the bar rounded */
+    border-radius: 45px; /* Makes the bar rounded */
     margin: 20px auto; /* Center horizontally and add spacing from the top */
     position: relative; /* Keep it in the normal document flow */
     transition: background 0.6s ease; /* Smooth transition for top bar background changes */
@@ -19,25 +21,26 @@ body {
 }
 
 .center-logo {
-    /* Ensure the logo is displayed properly */
     display: block;
-    width: 35vw; /* Set the width to 35% of the viewport width */
+    width: auto; /* Allow the width to adjust automatically */
     height: auto; /* Maintain aspect ratio */
-    max-width: 800px; /* Optional: Set a maximum width */
-    max-height: 800px; /* Optional: Set a maximum height */
-    margin: 10px auto; /* Add spacing below the top bar and center horizontally */
+    max-width: 90%; /* Ensure the logo doesn't exceed 90% of the viewport width */
+    max-height: 40vh; /* Ensure the logo doesn't exceed 20% of the viewport height */
+    margin: 10px auto; /* Center the logo horizontally and add spacing */
     position: relative; /* Position it relative to the top bar */
     transition: transform 0.1s ease; /* Smooth transition for scaling */
+    object-fit: contain; /* Ensure the logo fits within its container */
 }
 
 .download-box {
     width: 300px; /* Fixed width */
     height: auto; /* Allow height to adjust based on content */
+    max-width: 60vh; /* Ensure the logo doesn't exceed 90% of the viewport width */
+    max-height: 30vh; /* Ensure the logo doesn't exceed 20% of the viewport height */
     background: rgb(51, 92, 226); /* Match the background color of the top bar */
     border-radius: 35px; /* Same rounded corners as the top bar */
-    margin: 180px auto; /* Center horizontally and add spacing from the top */
+    margin: 15% auto 0px auto; /* Add more spacing above the box */
     padding: 15px; /* Add padding for content */
-    position: relative; /* Allow the box to flow naturally in the document */
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); /* Same shadow as the top bar */
     text-align: center; /* Center the text inside the box */
     color: white; /* Make the text color white for better contrast */
@@ -46,19 +49,20 @@ body {
 }
 
 #os-display {
+    font-size: clamp(8px, 1.5vw, 16px); /* Minimum 14px, scales with viewport width, maximum 16px */
     margin-bottom: 10px;
-    font-size: 16px; /* Slightly smaller font size */
     font-weight: bold;
 }
 
 #download-button {
-    padding: 12px 24px; /* Increase padding for a larger button */
-    font-size: 18px; /* Increase font size for better readability */
+    font-size: clamp(8px, 1.5vw, 16px); /* Minimum 14px, scales with viewport width, maximum 18px */
+    height: clamp(28px, 1vw, 32px);
+    width: clamp(84px, 1vw, 96px);
     cursor: pointer;
     border: none;
-    border-radius: 8px; /* Slightly larger border radius for a rounded look */
-    background-color: rgb(24, 48, 121); /* Keep the button's background color */
-    color: rgb(255, 255, 255); /* Keep the text color white */
+    border-radius: 6px;
+    background-color: rgb(24, 48, 121);
+    color: rgb(255, 255, 255);
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -68,10 +72,10 @@ body {
 }
 
 .not-your-os {
+    font-size: clamp(8px, 1.5vw, 16px); /* Minimum 12px, scales with viewport width, maximum 16px */
     display: block;
     margin-bottom: 10px; /* Add spacing between the link and the button */
-    font-size: 14px; /* Slightly smaller font size */
-    color: white; /* Match the text color of the box */
+    color: rgb(175, 175, 175); /* Match the text color of the box */
     text-decoration: underline; /* Add underline to indicate it's a link */
     cursor: pointer;
     transition: color 0.3s ease;
@@ -79,4 +83,18 @@ body {
 
 .not-your-os:hover {
     color: rgb(200, 200, 255); /* Change color on hover for better visibility */
+}
+
+.footer {
+    width: 100%; /* Full width */
+    color: rgb(167, 167, 167); /* White text for contrast */
+    text-align: center; /* Center the text */
+    font-size: 14px; /* Slightly smaller font size */
+    padding: 10px 0; /* Add vertical padding */
+    font-family: Arial, sans-serif; /* Use a clean font */
+    margin-top: auto; /* Push the footer to the bottom if content is short */
+}
+
+.footer p {
+    margin: 5px 0;
 }
