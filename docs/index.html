@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aiodob</title>
+    <title>Entity Client</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="econ.ico" type="image/x-icon">
 </head>
 <body>
     <div class="top-bar"></div>
     <img src="assets/gui_logo.svg" alt="Logo" class="center-logo">
     <div class="download-box">
-        <a href="https://github.com/qxdFox/Aiodob-Client/releases/latest" target="_blank" class="not-your-os">Not your OS?</a>
+        <a href="https://github.com/qxdFox/Entity-Client/releases/latest" target="_blank" class="not-your-os">Not your OS?</a>
         <p id="os-display">Detecting your OS...</p>
         <button id="download-button">Download</button>
     </div>
     <footer class="footer">
         <p>Website by Copilot</p>
-        <p>© Aiodob Client</p>
+        <p>© Entity Client</p>
     </footer>
     <script>
         const logo = document.querySelector('.center-logo');
@@ -26,7 +27,7 @@
 
         // Add a double-click event listener to the logo
         logo.addEventListener('dblclick', () => {
-            window.open('https://github.com/qxdFox/Aiodob-Client', '_blank');
+            window.open('https://github.com/qxdFox/Entity-Client', '_blank');
         });
 
         // Make the logo move up and down
@@ -54,7 +55,7 @@
             const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
             const topBarLightGradient = `radial-gradient(circle 250px at ${topBarXPercent}% ${topBarYPercent}%, rgb(51, 92, 226, 0.1), rgb(51, 92, 226))`;
-            const topBarDarkGradient = `radial-gradient(circle 250px at ${topBarXPercent}% ${topBarYPercent}%, rgb(30, 60, 120, 0.1), rgb(15, 30, 60))`;
+            const topBarDarkGradient = `radial-gradient(circle 250px at ${topBarXPercent}% ${topBarYPercent}%, rgb(30, 60, 80, 0.1), rgb(60, 30, 80))`;
 
             topBar.style.background = isDarkMode ? topBarDarkGradient : topBarLightGradient;
 
@@ -64,7 +65,7 @@
             const DownloadBoxYPercent = ((mouseY - DownloadBoxRect.top) / DownloadBoxRect.height) * 100;
 
             const DownloadBoxLightGradient = `radial-gradient(circle 250px at ${DownloadBoxXPercent}% ${DownloadBoxYPercent}%, rgb(51, 92, 226, 0.1), rgb(51, 92, 226))`;
-            const DownloadBoxDarkGradient = `radial-gradient(circle 250px at ${DownloadBoxXPercent}% ${DownloadBoxYPercent}%, rgb(30, 60, 120, 0.1), rgb(15, 30, 60))`;
+            const DownloadBoxDarkGradient = `radial-gradient(circle 250px at ${DownloadBoxXPercent}% ${DownloadBoxYPercent}%, rgb(30, 60, 80, 0.1), rgb(15, 30, 60))`;
 
             DownloadBox.style.background = isDarkMode ? DownloadBoxDarkGradient : DownloadBoxLightGradient;
         });
@@ -76,7 +77,7 @@
             topBar.style.background = isDarkMode ? 'rgb(15, 30, 60)' : 'rgb(51, 92, 226)';
             DownloadBox.style.background = isDarkMode ? 'rgb(15, 30, 60)' : 'rgb(51, 92, 226)';
             body.style.background = isDarkMode
-                ? 'linear-gradient(to bottom, rgb(30, 30, 60), rgb(15, 15, 30))'
+                ? 'linear-gradient(to bottom, rgb(60, 30, 80), rgb(15, 15, 30))'
                 : 'linear-gradient(to bottom, rgb(77, 116, 241), rgb(201, 166, 218))';
         }
 
@@ -109,11 +110,11 @@
 
             const downloadButton = document.getElementById('download-button');
             if (os === "Windows") {
-                downloadButton.onclick = () => window.open('https://github.com/qxdFox/Aiodob-Client/releases/latest/download/A-Client-win64.zip', '_blank');
+                downloadButton.onclick = () => window.open('https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-win64.zip', '_blank');
             } else if (os === "macOS") {
-                downloadButton.onclick = () => window.open('https://github.com/qxdFox/Aiodob-Client/releases/latest/download/A-Client-macos.zip', '_blank');
+                downloadButton.onclick = () => window.open('https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-macos.zip', '_blank');
             } else if (os === "Linux") {
-                downloadButton.onclick = () => window.open('https://github.com/qxdFox/Aiodob-Client/releases/latest/download/A-Client-ubnuntu.zip', '_blank');
+                downloadButton.onclick = () => window.open('https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-ubnuntu.zip', '_blank');
             } else if (os === "Android") {
                 downloadButton.onclick = () => alert('No download available for your OS.');
             } else if (os === "iOS") {
