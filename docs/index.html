@@ -55,7 +55,7 @@
             const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
             const topBarLightGradient = `radial-gradient(circle 250px at ${topBarXPercent}% ${topBarYPercent}%, rgb(51, 92, 226, 0.1), rgb(51, 92, 226))`;
-            const topBarDarkGradient = `radial-gradient(circle 250px at ${topBarXPercent}% ${topBarYPercent}%, rgb(30, 60, 80, 0.1), rgb(60, 30, 80))`;
+            const topBarDarkGradient = `radial-gradient(circle 250px at ${topBarXPercent}% ${topBarYPercent}%,  rgb(15, 30, 60, 0.1), rgb(15, 20, 60))`;
 
             topBar.style.background = isDarkMode ? topBarDarkGradient : topBarLightGradient;
 
@@ -65,7 +65,7 @@
             const DownloadBoxYPercent = ((mouseY - DownloadBoxRect.top) / DownloadBoxRect.height) * 100;
 
             const DownloadBoxLightGradient = `radial-gradient(circle 250px at ${DownloadBoxXPercent}% ${DownloadBoxYPercent}%, rgb(51, 92, 226, 0.1), rgb(51, 92, 226))`;
-            const DownloadBoxDarkGradient = `radial-gradient(circle 250px at ${DownloadBoxXPercent}% ${DownloadBoxYPercent}%, rgb(30, 60, 80, 0.1), rgb(15, 30, 60))`;
+            const DownloadBoxDarkGradient = `radial-gradient(circle 250px at ${DownloadBoxXPercent}% ${DownloadBoxYPercent}%, rgb(15, 30, 60, 0.1), rgb(15, 30, 60))`;
 
             DownloadBox.style.background = isDarkMode ? DownloadBoxDarkGradient : DownloadBoxLightGradient;
         });
@@ -74,10 +74,10 @@
         function updateTheme() {
             const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-            topBar.style.background = isDarkMode ? 'rgb(15, 30, 60)' : 'rgb(51, 92, 226)';
+            topBar.style.background = isDarkMode ? 'rgb(15, 20, 60)' : 'rgb(51, 92, 226)';
             DownloadBox.style.background = isDarkMode ? 'rgb(15, 30, 60)' : 'rgb(51, 92, 226)';
             body.style.background = isDarkMode
-                ? 'linear-gradient(to bottom, rgb(60, 30, 80), rgb(15, 15, 30))'
+                ? 'linear-gradient(to bottom, rgb(15, 30, 60), rgb(15, 15, 30))'
                 : 'linear-gradient(to bottom, rgb(77, 116, 241), rgb(201, 166, 218))';
         }
 

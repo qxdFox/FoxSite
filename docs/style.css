@@ -12,7 +12,7 @@ body {
 .top-bar {
     width: 90%; /* Adjust width as needed */
     height: 90px; /* Adjust height as needed */
-    background: rgb(51, 92, 226); /* Default light mode background */
+    background: rgb(15, 20, 60); /* Default light mode background */
     border-radius: 45px; /* Makes the bar rounded */
     margin: 20px auto; /* Center horizontally and add spacing from the top */
     position: relative; /* Keep it in the normal document flow */
