@@ -9,33 +9,22 @@ body {
     transition: background 0.6s ease; /* Smooth transition for background changes */
 }
 
-.top-bar {
-    width: 90%; /* Adjust width as needed */
-    height: 90px; /* Adjust height as needed */
-    background: rgb(15, 20, 60); /* Default light mode background */
-    border-radius: 45px; /* Makes the bar rounded */
-    margin: 20px auto; /* Center horizontally and add spacing from the top */
-    position: relative; /* Keep it in the normal document flow */
-    transition: background 0.6s ease; /* Smooth transition for top bar background changes */
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); /* Initial outline */
-}
-
 .center-logo {
     display: block;
     width: auto; /* Allow the width to adjust automatically */
     height: auto; /* Maintain aspect ratio */
     max-width: 90%; /* Ensure the logo doesn't exceed 90% of the viewport width */
     max-height: 40vh; /* Ensure the logo doesn't exceed 20% of the viewport height */
-    margin: 10px auto; /* Center the logo horizontally and add spacing */
+    margin: 30px auto 5px auto; /* Center the logo horizontally and add spacing */
     position: relative; /* Position it relative to the top bar */
     transition: transform 0.1s ease; /* Smooth transition for scaling */
     object-fit: contain; /* Ensure the logo fits within its container */
 }
 
 .download-box {
-    width: 300px; /* Fixed width */
-    height: auto; /* Allow height to adjust based on content */
-    max-width: 60vh; /* Ensure the logo doesn't exceed 90% of the viewport width */
+    width: 40%; /* Fixed width */
+    height: 30%; /* Allow height to adjust based on content */
+    max-width: 40vh; /* Ensure the logo doesn't exceed 90% of the viewport width */
     max-height: 30vh; /* Ensure the logo doesn't exceed 20% of the viewport height */
     background: rgb(51, 92, 226); /* Match the background color of the top bar */
     border-radius: 35px; /* Same rounded corners as the top bar */
