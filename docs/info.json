@@ -1,4 +1,4 @@
 {
-    "version": "1.3.1",
-    "news":  "tes\ntest\ntest"
+  "version": "1.4.0",
+  "news": "#E-Client v1.4.0\n\n##-- Changes --\n• Added this page \n• Added online players list for warlist players\n• Added Quick Actions\n• Added Gores Mode key reader to the menu\n• Added Emoji Support\n• Added Freeze Katana\n• Added option to revert team colors\n-#   ⬑ ec_revert_team_colors 1\n• Made cursor render in spec while HUD is turned off\n• Improved Notify on Move\n• Individual outline width for every type\n• Moved Chatbubbles to Visual Settings\n• Stole Status Bar from TClient\n\n##-- Bug Fixes --\n• Fixed weird Gores Mode behaviour when its not bound to mouse1\n• Fixed FPS drops when receiving new snapshots\n• Fixed Chatbubbles storing messages while offline\n• Fixed Chatbubbles still popping up if a player is muted\n• Fixed some buttons not working in the menu\n\nCoconut?\n#🥥"
 }
