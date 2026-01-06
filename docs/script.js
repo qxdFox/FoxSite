@@ -72,7 +72,9 @@ function detectOS() {
     }
 
     const osDisplay = document.getElementById('os-display');
-    osDisplay.textContent = `${os}`;
+    const osName = document.getElementById('os-name');
+    osDisplay.textContent = `Detected OS: ${os}`;
+    osName.textContent = os;
 
     const downloadButton = document.getElementById('download-button');
     if (os === "Windows") {
@@ -89,5 +91,42 @@ function detectOS() {
         downloadButton.onclick = () => alert('No download available for your OS.');
     }
 }
+
+    // Generate decorative ghosts dynamically with random sizes/positions
+    function createGhosts(count = 18) {
+        const container = document.getElementById('floating-ghosts') || document.querySelector('.floating-ghosts');
+        if (!container) return;
+
+        const maxAssetIndex = 20; // highest ghost asset index available
+        for (let i = 0; i < count; i++) {
+            const img = document.createElement('img');
+            const idx = Math.floor(Math.random() * (maxAssetIndex + 1));
+            img.src = `assets/ghosts/ghost_${idx}.png`;
+            img.className = 'ghost';
+
+            // Random size (px)
+            const size = Math.floor(Math.random() * 180) + 40; // 40 - 220px
+            img.style.width = `${size}px`;
+            img.style.height = 'auto';
+
+            // Random position
+            img.style.left = `${Math.random() * 100}%`;
+            img.style.top = `${Math.random() * 100}%`;
+            img.style.position = 'absolute';
+
+            // Subtle opacity and randomized animation timing
+            img.style.opacity = (Math.random() * 0.15 + 0.03).toFixed(2);
+            img.style.animationDuration = `${Math.random() * 25 + 15}s`; // 15s - 40s
+            img.style.animationDelay = `${Math.random() * -20}s`;
+
+            // Start rotated slightly for variety
+            img.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg)`;
+
+            container.appendChild(img);
+        }
+    }
+
+    // Slightly increase ghost count for a denser background
+    createGhosts(26);
 
 detectOS();

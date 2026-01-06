@@ -6,18 +6,31 @@
     <title>Entity Client</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="econ.ico" type="image/x-icon">
+    <meta name="description" content="Download Entity Client for your operating system">
 </head>
 <body>
-    <img src="assets/gui_logo.svg" alt="Logo" class="center-logo">
-    <div class="download-box">
-        <a href="https://github.com/qxdFox/Entity-Client/releases/latest" target="_blank" class="not-your-os">Not your OS?</a>
-        <p id="os-display">Detecting your OS...</p>
-        <button id="download-button">Download</button>
-    </div>
+    <div class="floating-ghosts" id="floating-ghosts"></div>
+
+    <header class="hero-section">
+        <img src="assets/gui_logo.svg" alt="Entity Client Logo" class="center-logo">
+    </header>
+
+    <main class="main-content">
+        <div class="download-box">
+            <div class="download-header">
+                <h2>Download Now</h2>
+                <p id="os-display">Detecting your OS...</p>
+            </div>
+            <button id="download-button">Download for <span id="os-name"></span></button>
+            <a href="https://github.com/qxdFox/Entity-Client/releases" target="_blank" class="not-your-os">Not your OS? View all releases</a>
+        </div>
+    </main>
+
     <footer class="footer">
         <p>Made by Tide</p>
-        <p>© Entity Client</p>
+        <p>© Entity Client.</p>
     </footer>
+
     <script src="script.js"></script>
 </body>
 </html>
