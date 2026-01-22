@@ -78,11 +78,11 @@ function detectOS() {
 
     const downloadButton = document.getElementById('download-button');
     if (os === "Windows") {
-        downloadButton.onclick = () => window.open('https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-win64.zip', '_blank');
+        downloadButton.onclick = () => window.open('https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-windows.zip', '_blank');
     } else if (os === "macOS") {
-        downloadButton.onclick = () => window.open('https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-macos.zip', '_blank');
+        downloadButton.onclick = () => window.open('https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-macOS.dmg', '_blank');
     } else if (os === "Linux") {
-        downloadButton.onclick = () => window.open('https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-ubuntu.zip', '_blank');
+        downloadButton.onclick = () => window.open('https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-ubuntu.tar.xz', '_blank');
     } else if (os === "Android") {
         downloadButton.onclick = () => alert('No download available for your OS.');
     } else if (os === "iOS") {
