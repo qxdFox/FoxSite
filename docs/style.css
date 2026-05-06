@@ -42,13 +42,14 @@ body::before {
     display: block;
     width: auto;
     height: auto;
-    max-width: 380px;
-    max-height: 250px;
+    max-width: 460px;
+    max-height: 300px;
     margin: 50px auto 20px auto;
     position: relative;
     transition: all 0.3s ease;
     object-fit: contain;
     filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+    cursor: pointer;
 }
 
 .download-box {
@@ -353,8 +354,8 @@ body::before {
 /* Responsive design */
 @media (max-width: 768px) {
     .center-logo {
-        max-width: 300px;
-        max-height: 190px;
+        max-width: 340px;
+        max-height: 220px;
         margin: 30px auto 15px auto;
     }
 
