@@ -2,6 +2,20 @@ const logo = document.querySelector('.center-logo');
 const downloadBox = document.querySelector('.download-box');
 const body = document.body;
 const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+const changelogMeta = document.getElementById('changelog-meta');
+const changelogContent = document.getElementById('changelog-content');
+const changelogReleaseLink = document.getElementById('changelog-release-link');
+const changelogToggle = document.getElementById('changelog-toggle');
+
+const RELEASES_REPO = 'FoxNet-DDNet/Entity-Client-DDNet';
+const RELEASES_URL = `https://github.com/${RELEASES_REPO}/releases`;
+const RELEASES_API_URL = `https://api.github.com/repos/${RELEASES_REPO}/releases?per_page=10`;
+const RELEASES_CACHE_URL = 'releases-cache.json';
+const DEFAULT_VISIBLE_RELEASES = 3;
+
+let changelogRenderedEntries = [];
+let changelogExpanded = false;
+let changelogSourceLabel = '';
 
 const DOWNLOAD_URLS = {
     Windows: 'https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-windows.zip',
@@ -123,6 +137,244 @@ function createSeededRandom(seed) {
     };
 }
 
+function formatReleaseDate(isoString) {
+    if (!isoString) return 'Unknown release date';
+
+    const date = new Date(isoString);
+    if (Number.isNaN(date.getTime())) return 'Unknown release date';
+
+    return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+function createHttpError(message, status) {
+    const error = new Error(message);
+    error.status = status;
+    return error;
+}
+
+function isRateLimitError(error) {
+    return error?.status === 403 || error?.status === 429;
+}
+
+function setChangelogFallback(message, details) {
+    if (changelogMeta) {
+        changelogMeta.textContent = message;
+    }
+    if (changelogContent) {
+        changelogContent.textContent = details || 'Release notes are currently unavailable. Open the Releases page to view them directly.';
+    }
+    if (changelogReleaseLink) {
+        changelogReleaseLink.href = RELEASES_URL;
+    }
+    if (changelogToggle) {
+        changelogToggle.hidden = true;
+    }
+}
+
+function getReleaseBodyText(release) {
+    if (!release || typeof release !== 'object') {
+        return '';
+    }
+
+    const bodyText = typeof release.body === 'string' ? release.body.trim() : '';
+    if (bodyText) {
+        return bodyText;
+    }
+
+    return 'No release notes were provided for this release.';
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
+function renderMarkdownLocally(markdownText) {
+    const fallbackHtml = `<pre>${escapeHtml(markdownText)}</pre>`;
+
+    if (!window.marked || typeof window.marked.parse !== 'function') {
+        return fallbackHtml;
+    }
+
+    const renderedHtml = window.marked.parse(markdownText, {
+        gfm: true,
+        breaks: true,
+        headerIds: false,
+        mangle: false
+    });
+
+    if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+        return window.DOMPurify.sanitize(renderedHtml);
+    }
+
+    return renderedHtml;
+}
+
+async function fetchRecentReleases() {
+    const releasesResponse = await fetch(RELEASES_API_URL, {
+        headers: {
+            Accept: 'application/vnd.github+json'
+        }
+    });
+
+    if (!releasesResponse.ok) {
+        throw createHttpError(`GitHub API error ${releasesResponse.status}`, releasesResponse.status);
+    }
+
+    const releases = await releasesResponse.json();
+    if (!Array.isArray(releases) || releases.length === 0) {
+        throw new Error('No releases found');
+    }
+
+    return releases;
+}
+
+async function fetchCachedReleases() {
+    const cacheResponse = await fetch(RELEASES_CACHE_URL, {
+        cache: 'no-store'
+    });
+
+    if (!cacheResponse.ok) {
+        throw createHttpError(`Cache error ${cacheResponse.status}`, cacheResponse.status);
+    }
+
+    const cacheData = await cacheResponse.json();
+    if (!Array.isArray(cacheData.releases) || cacheData.releases.length === 0) {
+        throw new Error('No cached releases found');
+    }
+
+    return cacheData;
+}
+
+function normalizeRelease(release) {
+    return {
+        name: release.name || release.tagName || release.tag_name || 'Unnamed release',
+        url: release.html_url || release.url || RELEASES_URL,
+        publishedAt: release.publishedAt || release.published_at || release.created_at || '',
+        body: typeof release.body === 'string' ? release.body : ''
+    };
+}
+
+function updateChangelogMetaText() {
+    if (!changelogMeta) {
+        return;
+    }
+
+    const total = changelogRenderedEntries.length;
+    if (!total) {
+        changelogMeta.textContent = changelogSourceLabel || 'No releases available';
+        return;
+    }
+
+    const summary = changelogExpanded
+        ? `Showing all ${total} recent releases`
+        : `Showing the latest ${Math.min(DEFAULT_VISIBLE_RELEASES, total)} of ${total} releases`;
+
+    changelogMeta.textContent = changelogSourceLabel ? `${summary} - ${changelogSourceLabel}` : summary;
+}
+
+async function buildReleaseEntryHtml(release) {
+    const normalizedRelease = normalizeRelease(release);
+    const releaseDate = formatReleaseDate(normalizedRelease.publishedAt);
+    const releaseBody = getReleaseBodyText(normalizedRelease);
+    const renderedBody = renderMarkdownLocally(releaseBody);
+
+    return `
+        <article class="release-entry">
+            <div class="release-heading">
+                <h4 class="release-title"><a href="${escapeHtml(normalizedRelease.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(normalizedRelease.name)}</a></h4>
+                <p class="release-date">${escapeHtml(releaseDate)}</p>
+            </div>
+            <div class="release-body">${renderedBody}</div>
+        </article>
+    `;
+}
+
+function updateChangelogToggleState() {
+    if (!changelogToggle) {
+        return;
+    }
+
+    if (changelogRenderedEntries.length <= DEFAULT_VISIBLE_RELEASES) {
+        changelogToggle.hidden = true;
+        return;
+    }
+
+    changelogToggle.hidden = false;
+    changelogToggle.textContent = changelogExpanded ? 'Show fewer releases' : 'Show more releases';
+}
+
+function renderVisibleChangelogEntries() {
+    if (!changelogContent) {
+        return;
+    }
+
+    const visibleCount = changelogExpanded
+        ? changelogRenderedEntries.length
+        : Math.min(DEFAULT_VISIBLE_RELEASES, changelogRenderedEntries.length);
+
+    changelogContent.innerHTML = changelogRenderedEntries.slice(0, visibleCount).join('');
+
+    const links = changelogContent.querySelectorAll('a');
+    links.forEach((link) => {
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+    });
+
+    updateChangelogMetaText();
+    updateChangelogToggleState();
+}
+
+async function loadChangelog() {
+    if (!changelogMeta || !changelogContent || !changelogReleaseLink) {
+        return;
+    }
+
+    changelogReleaseLink.href = RELEASES_URL;
+
+    try {
+        const releases = await fetchRecentReleases();
+        changelogSourceLabel = 'Live from GitHub';
+        changelogRenderedEntries = await Promise.all(releases.map(buildReleaseEntryHtml));
+    } catch (error) {
+        try {
+            const cacheData = await fetchCachedReleases();
+            const updatedAt = formatReleaseDate(cacheData.updatedAt);
+            changelogSourceLabel = isRateLimitError(error)
+                ? `GitHub API rate limited - cached copy from ${updatedAt}`
+                : `Using cached copy from ${updatedAt}`;
+            changelogRenderedEntries = await Promise.all(cacheData.releases.map(buildReleaseEntryHtml));
+        } catch (cacheError) {
+            const fallbackMessage = isRateLimitError(error)
+                ? 'GitHub API rate limit reached.'
+                : 'Could not load the latest changelog.';
+            const fallbackDetails = isRateLimitError(error)
+                ? 'GitHub temporarily blocked more anonymous API requests from this IP address, and no local cache is available yet. Run the cache refresh script before deploys to keep release notes available.'
+                : 'Live GitHub release notes and the local changelog cache are both unavailable right now. Open the Releases page to view them directly.';
+            setChangelogFallback(fallbackMessage, fallbackDetails);
+            return;
+        }
+    }
+
+    changelogExpanded = false;
+    renderVisibleChangelogEntries();
+
+    if (changelogToggle) {
+        changelogToggle.onclick = () => {
+            changelogExpanded = !changelogExpanded;
+            renderVisibleChangelogEntries();
+        };
+    }
+}
+
 // Generate decorative ghosts with deterministic, size-aware spacing.
 function createGhosts(count = 18) {
     const container = document.getElementById('floating-ghosts') || document.querySelector('.floating-ghosts');
@@ -226,3 +478,4 @@ function createGhosts(count = 18) {
 createGhosts(26);
 
 detectOS();
+loadChangelog();
