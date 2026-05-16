@@ -6,15 +6,18 @@ const changelogMeta = document.getElementById('changelog-meta');
 const changelogContent = document.getElementById('changelog-content');
 const changelogReleaseLink = document.getElementById('changelog-release-link');
 const changelogToggle = document.getElementById('changelog-toggle');
+const isChangelogPage = document.body?.dataset?.page === 'changelog';
 
 const RELEASES_REPO = 'FoxNet-DDNet/Entity-Client-DDNet';
 const RELEASES_URL = `https://github.com/${RELEASES_REPO}/releases`;
-const RELEASES_API_URL = `https://api.github.com/repos/${RELEASES_REPO}/releases?per_page=10`;
-const RELEASES_CACHE_URL = 'releases-cache.json';
-const DEFAULT_VISIBLE_RELEASES = 3;
+const RELEASES_PER_PAGE = isChangelogPage ? 25 : 10;
+const RELEASES_API_URL = `https://api.github.com/repos/${RELEASES_REPO}/releases?per_page=${RELEASES_PER_PAGE}`;
+const RELEASES_CACHE_URL = '/releases-cache.json';
+const HOMEPAGE_VISIBLE_RELEASES = 1;
+const CHANGELOG_PAGE_URL = '/changelog';
+const GHOSTS_ASSET_BASE_PATH = '/assets/ghosts';
 
 let changelogRenderedEntries = [];
-let changelogExpanded = false;
 let changelogSourceLabel = '';
 
 const DOWNLOAD_URLS = {
@@ -69,11 +72,12 @@ document.addEventListener('mousemove', (event) => {
 
 // Function to update the top bar, os box, and body background based on the current theme
 function updateTheme() {
-    if (!downloadBox) return;
-
     const isDarkMode = darkModeQuery.matches;
 
-    downloadBox.style.background = isDarkMode ? 'rgb(15, 30, 60)' : 'rgb(51, 92, 226)';
+    if (downloadBox) {
+        downloadBox.style.background = isDarkMode ? 'rgb(15, 30, 60)' : 'rgb(51, 92, 226)';
+    }
+
     body.style.background = isDarkMode
         ? 'linear-gradient(to bottom, rgb(15, 30, 60), rgb(15, 15, 30))'
         : 'linear-gradient(to bottom, rgb(77, 116, 241), rgb(201, 166, 218))';
@@ -171,7 +175,10 @@ function setChangelogFallback(message, details) {
         changelogReleaseLink.href = RELEASES_URL;
     }
     if (changelogToggle) {
-        changelogToggle.hidden = true;
+        changelogToggle.hidden = isChangelogPage;
+        if (!isChangelogPage) {
+            changelogToggle.textContent = 'Show more releases';
+        }
     }
 }
 
@@ -274,9 +281,9 @@ function updateChangelogMetaText() {
         return;
     }
 
-    const summary = changelogExpanded
-        ? `Showing all ${total} recent releases`
-        : `Showing the latest ${Math.min(DEFAULT_VISIBLE_RELEASES, total)} of ${total} releases`;
+    const summary = isChangelogPage
+        ? `Showing ${total} recent releases`
+        : `Showing the latest release`;
 
     changelogMeta.textContent = changelogSourceLabel ? `${summary} - ${changelogSourceLabel}` : summary;
 }
@@ -303,13 +310,13 @@ function updateChangelogToggleState() {
         return;
     }
 
-    if (changelogRenderedEntries.length <= DEFAULT_VISIBLE_RELEASES) {
+    if (isChangelogPage) {
         changelogToggle.hidden = true;
         return;
     }
 
     changelogToggle.hidden = false;
-    changelogToggle.textContent = changelogExpanded ? 'Show fewer releases' : 'Show more releases';
+    changelogToggle.textContent = 'Show more releases';
 }
 
 function renderVisibleChangelogEntries() {
@@ -317,9 +324,9 @@ function renderVisibleChangelogEntries() {
         return;
     }
 
-    const visibleCount = changelogExpanded
+    const visibleCount = isChangelogPage
         ? changelogRenderedEntries.length
-        : Math.min(DEFAULT_VISIBLE_RELEASES, changelogRenderedEntries.length);
+        : Math.min(HOMEPAGE_VISIBLE_RELEASES, changelogRenderedEntries.length);
 
     changelogContent.innerHTML = changelogRenderedEntries.slice(0, visibleCount).join('');
 
@@ -343,7 +350,8 @@ async function loadChangelog() {
     try {
         const releases = await fetchRecentReleases();
         changelogSourceLabel = 'Live from GitHub';
-        changelogRenderedEntries = await Promise.all(releases.map(buildReleaseEntryHtml));
+        const releasesToRender = isChangelogPage ? releases : releases.slice(0, HOMEPAGE_VISIBLE_RELEASES);
+        changelogRenderedEntries = await Promise.all(releasesToRender.map(buildReleaseEntryHtml));
     } catch (error) {
         try {
             const cacheData = await fetchCachedReleases();
@@ -351,7 +359,10 @@ async function loadChangelog() {
             changelogSourceLabel = isRateLimitError(error)
                 ? `GitHub API rate limited - cached copy from ${updatedAt}`
                 : `Using cached copy from ${updatedAt}`;
-            changelogRenderedEntries = await Promise.all(cacheData.releases.map(buildReleaseEntryHtml));
+            const cachedReleasesToRender = isChangelogPage
+                ? cacheData.releases
+                : cacheData.releases.slice(0, HOMEPAGE_VISIBLE_RELEASES);
+            changelogRenderedEntries = await Promise.all(cachedReleasesToRender.map(buildReleaseEntryHtml));
         } catch (cacheError) {
             const fallbackMessage = isRateLimitError(error)
                 ? 'GitHub API rate limit reached.'
@@ -364,13 +375,11 @@ async function loadChangelog() {
         }
     }
 
-    changelogExpanded = false;
     renderVisibleChangelogEntries();
 
-    if (changelogToggle) {
+    if (changelogToggle && !isChangelogPage) {
         changelogToggle.onclick = () => {
-            changelogExpanded = !changelogExpanded;
-            renderVisibleChangelogEntries();
+            window.location.href = CHANGELOG_PAGE_URL;
         };
     }
 }
@@ -429,7 +438,7 @@ function createGhosts(count = 18) {
     for (let i = 0; i < targetGhostCount; i++) {
         const img = document.createElement('img');
         const idx = Math.floor(random() * (maxAssetIndex + 1));
-        img.src = `assets/ghosts/ghost_${idx}.png`;
+        img.src = `${GHOSTS_ASSET_BASE_PATH}/ghost_${idx}.png`;
         img.className = 'ghost';
 
         // 40px - 220px
