@@ -1,76 +1,76 @@
 {
-  "updatedAt": "2026-05-06T11:43:31.4468389Z",
-  "repo": "FoxNet-DDNet/Entity-Client-DDNet",
   "releases": [
     {
-      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.8.1",
-      "publishedAt": "2026-04-04T20:36:02Z",
-      "name": "v1.8.1 Hot Fix",
+      "body": "### DDNet 20.0--\r\n\r\n# Changes\r\n\r\n- Added Media Island - Displays your current player media and a Visualizer -> Hovering it (from chat, console or demo viewer) expands it with quick action buttons\r\n- Added a search bar to the entity client settings and visuals menu\r\n- Added Auto Translation using Googles API (`ec_translate_auto 0` to turn off)\r\n- Added Translation whitelist/blacklist to use alongside auto translation (`ec_translate_language_whitelist`, `ec_translate_language_blacklist`)\r\n- Added Cosmetic Prediction for `FoxNetwork` servers that are above version 3.2.1\r\n- Added mouse sensitivity decouple options in the Controls tab\r\n- Added ability to select text in entity client news tab\r\n- Added Tide as a developer\r\n- Added option to forcefully show 0.7 skins on any server (`ec_force_seven_skin 1`)\r\n\r\n# Bug Fixes\r\n\r\n- Fixed server-side rainbow updating twice as fast as it should\r\n- Fixed chat selection/scrolling edge cases",
+      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v2.0",
+      "name": "v2.0",
+      "tagName": "v2.0",
+      "publishedAt": "2026-05-16T18:14:21Z"
+    },
+    {
       "body": "### DDNet 19.9.0--\r\n\r\n# Bug Fixes\r\n\r\n- Fixed weird bug where selecting Text in chat wouldn't align with what's shown in chat\r\n",
-      "tagName": "v1.8.1"
+      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.8.1",
+      "name": "v1.8.1 Hot Fix",
+      "tagName": "v1.8.1",
+      "publishedAt": "2026-04-04T20:36:02Z"
     },
     {
-      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.8",
-      "publishedAt": "2026-04-04T11:54:26Z",
-      "name": "v1.8",
       "body": "### DDNet 19.9.0--\r\n\r\n# Changes\r\n\r\n- Add Process priority settings, allows setting ddnet priority higher and discords lower (should fix lag when in call)\r\n- Improved gores mode\r\n- Improved chai script performance a bit\r\n- Added translate from TClient\r\n- Added scrolling to chat\r\n- Added ability to select and copy content from chat directly\r\n- Added the abilty to change moving tiles design mode\r\n\r\n# Bug Fixes\r\n\r\n- Fixed invalid weapon crash\r\n- Fixed warlist info in server browser, it now always updated correctly",
-      "tagName": "v1.8"
+      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.8",
+      "name": "v1.8",
+      "tagName": "v1.8",
+      "publishedAt": "2026-04-04T11:54:26Z"
     },
     {
-      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.7.1",
-      "publishedAt": "2026-03-20T10:41:07Z",
-      "name": "v1.7.1",
       "body": "### DDNet 19.8.0\r\n\r\n# Bug Fixes\r\n\r\n- Fixed some Fast Input issues\r\n- Fixed \"invalid weapon\" crash",
-      "tagName": "v1.7.1"
+      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.7.1",
+      "name": "v1.7.1",
+      "tagName": "v1.7.1",
+      "publishedAt": "2026-03-20T10:41:07Z"
     },
     {
-      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.7",
-      "publishedAt": "2026-03-08T00:42:41Z",
-      "name": "v1.7",
       "body": "### DDNet 19.8.0\r\n\r\n# Changes\r\n\r\n- Added option to show moving tiles in entity view (ec_show_moving_tiles_entities)\r\n- Added physics balls (physic_ball_new)\r\n- Added Map Overview to menu\r\n- Added Frozen Tee Hud to menu\r\n- Added Warlist integration to Frozen Tee Hud\r\n- Added option to render all feet as white feet (ec_white_feet)\r\n- Added option to render frozen tees with colored body (ec_color_frozen_tee_body)\r\n- Added Warlist Prefixes to server info in server browser\r\n- Added \".antiad\" default chat command -> sends a randomized entityclient.net advertisement to use against bot ads\r\n- Removed ec_list_warlist_info, can be done with chai script\r\n\r\n# Bug Fixes\r\n\r\n- A bunch of Fast Input & Anitping smootihng fixes from TClient\r\n- Some Mumble fixes from TClient\r\n- Fixed steam integration, I think?",
-      "tagName": "v1.7"
+      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.7",
+      "name": "v1.7",
+      "tagName": "v1.7",
+      "publishedAt": "2026-03-08T00:42:41Z"
     },
     {
-      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.6.1",
-      "publishedAt": "2026-02-15T20:36:48Z",
-      "name": "v1.6.1",
       "body": "### DDNet 19.8.0-\r\n\r\n# Bug Fixes\r\n\r\n- Fast Input fixes\r\n- Properly send fast input to servers\r\n- Fix leaving team on kill",
-      "tagName": "v1.6.1"
+      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.6.1",
+      "name": "v1.6.1",
+      "tagName": "v1.6.1",
+      "publishedAt": "2026-02-15T20:36:48Z"
     },
     {
-      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.6.0",
-      "publishedAt": "2026-02-14T18:04:42Z",
-      "name": "v1.6.0",
       "body": "### DDNet 19.8.0-\r\n\r\n# Changes\r\n\r\n- Add help text in quick actions\r\n- Added map overview (ec_map_overview)\r\n- Added Volleyball with custom rendering from TClient\r\n- Added adjustable fast input from TClient\r\n- Added Tee Trails from TClient with improved alpha fading\r\n- Added Custom Flags from TClient and added entity flag\r\n- Properly load custom communites on client start\r\n- Increased Discord rpc status buffer size\r\n- Added option to outline team colors in scoreboard (ec_scoreboard_outline_teams)\r\n- Added option to revert ddnet hook line changes (ec_revert_hook_line)\r\n\r\n# Bug Fixes\r\n\r\n- Fixed Gores Mode key reader crash\r\n- Fixed Chat Bubbles empty textcontainer crash\r\n- Fixed anti spawn block again\r\n- Fixed being able to have an empty name\r\n\r\n#\r\nReport Bugs to me!",
-      "tagName": "v1.6.0"
+      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.6.0",
+      "name": "v1.6.0",
+      "tagName": "v1.6.0",
+      "publishedAt": "2026-02-14T18:04:42Z"
     },
     {
-      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.5.1",
-      "publishedAt": "2026-01-21T20:44:48Z",
-      "name": "v1.5.1",
       "body": "### DDNet 19.7.0\r\n\r\n# Changes\r\n\r\n- Added Chai Script from TClient\r\n- allow as low as -10 for cl_nameplates_offset\r\n- Improved Anti Ping smooting -> players don't 'randomly' teleport anymore\r\n- removed perma_password (can be done with chaiscript)\r\n- You can now drag and drop wartypes in the warlist settings menu\r\n- Added option to render weapons while frozen (ec_render_weapons_in_freeze)\r\n\r\n# Bug Fixes\r\n\r\n- Close Scrollregions if theyre outside of another scrollregion (e.g Effect selector in visuals tab)\r\n- Fixed entries getting removed if temp entry gets added on same name\r\n- Fixed Gores Mode if toggled from the menu\r\n- Fixed Chat command cache not updating when adding new bindchat command\r\n- Fixed onlineinfo displaying the wrong afk amount sometimes\r\n- Fixed some auto add on name change issues\r\n\r\n#\r\nReport Bugs to me!",
-      "tagName": "v1.5.1"
+      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.5.1",
+      "name": "v1.5.1",
+      "tagName": "v1.5.1",
+      "publishedAt": "2026-01-21T20:44:48Z"
     },
     {
-      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.5.0",
-      "publishedAt": "2025-12-14T13:30:34Z",
-      "name": "v1.5.0",
       "body": "### DDNet 19.6.0\r\n\r\n# Changes\r\n\r\n- Added default quick actions bind\r\n- Added Client version to console\r\n- Added say_queued which respects the normal chat queue\r\n- Added Custom Communities from [TClient](https://github.com/TaterClient/TClient)\r\n- Added Background Draw from [TClient](https://github.com/TaterClient/TClient)\r\n- Moved Muted Icon in scoreboard to the end of the players name\r\n- Added some custom stuff for my servers (might be more coming)\r\n- Refactored `onlineinfo`\r\n- Refactored Freeze Kill\r\n\r\n# Bug Fixes\r\n\r\n- Fixed Quickactions on blockworlds\r\n- Fixed Bindchat crash\r\n- Fixed Button Overlap on different Resolutions\r\n- Fixed Server-Side Rainbow sliders\r\n\r\n#\r\nReport Bugs to me!",
-      "tagName": "v1.5.0"
+      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.5.0",
+      "name": "v1.5.0",
+      "tagName": "v1.5.0",
+      "publishedAt": "2025-12-14T13:30:34Z"
     },
     {
-      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.4.1",
-      "publishedAt": "2025-10-22T06:31:13Z",
-      "name": "v1.4.1",
       "body": "### DDNet 19.5.0\r\n\r\n# Changes\r\n\r\n- Added Fallback url for info fetching\r\n- Added config for friend colors in chat (ec_chat_friend_color)\r\n- When hovering a wartype in the menu it now shows the amount of entries for that type\r\n\r\n# Bug Fixes\r\n\r\n- Fixed issue where quick actions would switch targets while its still open\r\n- Fixed chat autocompletion bug\r\n\r\n#\r\nReport Bugs to me!",
-      "tagName": "v1.4.1"
-    },
-    {
-      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.4.0",
-      "publishedAt": "2025-09-16T12:22:41Z",
-      "name": "v1.4.0",
-      "body": "### DDNet 19.4.0\r\n\r\n# Changes\r\n\r\n- Added news page where I can write whatever the flicking flack i want in :>\r\n- Added online player list for warlist players (like the friends list in the server browser)\r\n- Added quick actions\r\n- Added gores mode key reader to the settings menu\r\n- Added emoji support\r\n- Added freeze katana\r\n- Added option to revert team colors (ec_revert_team_colors 1)\r\n- Added options for friend colors (ec_nameplate_friendcolor, ec_scoreboard_friendcolor)\r\n- Added remove_entry_name and remove_entry_clan - removes any entry with that name\r\n- Made cursor render in spec even if hud is turned off\r\n- Improved notify on move -> now checks if player has been bumped, hooked and hammered instead of just comparing last and new positions (tabbing out while falling doesnt notify anymore)\r\n- Individual outline width for every type\r\n- Moved chat bubbles to visual settings\r\n- Stole status bar from T-Client\r\n- Stole wheel animations from T-Client (ec_animate_wheel_time)\r\n- Stole T-Client outline update - now works with front layer aswell\r\n\r\n# Bug Fixes\r\n\r\n- Fixed buggy freezekill rendering\r\n- Fixed weird gores mode behavior when its not on mouse1\r\n- Fixed FPS drop when receiving a new snapshot\r\n- Fixed chat bubbles storing messages while offline\r\n- Fixed chat bubbles still popping up if a player is muted\r\n- Fixed some buttons not working in the menu\r\n\r\n#\r\nReport Bugs to me!",
-      "tagName": "v1.4.0"
+      "url": "https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases/tag/v1.4.1",
+      "name": "v1.4.1",
+      "tagName": "v1.4.1",
+      "publishedAt": "2025-10-22T06:31:13Z"
     }
-  ]
+  ],
+  "updatedAt": "2026-05-16T21:12:10.9381537Z",
+  "repo": "FoxNet-DDNet/Entity-Client-DDNet"
 }
