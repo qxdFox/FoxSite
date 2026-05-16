@@ -30,28 +30,57 @@
 <body>
     <div class="floating-ghosts" id="floating-ghosts"></div>
 
+    <header class="top-bar" aria-label="Main navigation">
+        <a class="top-brand" href="/" aria-label="Entity Client home">
+            <img id="top-brand-ghost" class="top-brand-ghost" src="assets/ghosts/ghost_0.png" alt="" aria-hidden="true">
+            <span class="top-brand-text">Entity Client</span>
+        </a>
+        <fieldset class="view-switcher" aria-label="Switch page view">
+            <legend class="sr-only">Select view</legend>
+            <input type="radio" name="top-view" id="view-download" value="download" checked>
+            <label for="view-download">Download</label>
+            <input type="radio" name="top-view" id="view-changelog" value="changelog">
+            <label for="view-changelog">Changelog</label>
+        </fieldset>
+
+        <div class="top-links-menu" id="top-links-menu">
+            <button class="top-links-toggle" id="top-links-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Links">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="4" cy="10" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="16" cy="10" r="1.5"/></svg>
+            </button>
+            <div class="top-links-dropdown" id="top-links-dropdown" role="menu">
+                <a class="top-links-item" href="https://github.com/FoxNet-DDNet/Entity-Client-DDNet" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.165c-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.729.083-.729 1.205.085 1.84 1.237 1.84 1.237 1.07 1.835 2.807 1.305 3.492.998.108-.776.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.236-3.22-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3.003-.404c1.02.005 2.047.138 3.003.404 2.29-1.552 3.296-1.23 3.296-1.23.654 1.653.243 2.873.12 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.807 5.625-5.48 5.92.43.372.823 1.102.823 2.222v3.293c0 .322.218.694.825.576C20.565 21.796 24 17.298 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                    GitHub
+                </a>
+                <a class="top-links-item" href="https://ko-fi.com/qxdFox" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    Support on Ko-fi
+                </a>
+            </div>
+        </div>
+    </header>
+
     <header class="hero-section">
         <img src="assets/gui_logo.svg" alt="Entity Client Logo" class="center-logo">
     </header>
 
     <main class="main-content">
-        <div class="download-box">
+        <div id="download-panel" class="download-box">
             <div class="download-header">
                 <h2>Download Now</h2>
-                <p id="os-display">Detecting your OS...</p>
+                <p id="os-display"></p>
             </div>
             <button id="download-button">Download for <span id="os-name"></span></button>
             <a href="https://github.com/qxdFox/Entity-Client/releases" target="_blank" rel="noopener noreferrer" class="not-your-os">Not your OS? View all releases</a>
         </div>
 
-        <section class="changelog-box" aria-labelledby="changelog-title">
+        <section id="changelog-panel" class="changelog-box" aria-labelledby="changelog-title" hidden>
             <div class="changelog-header">
                 <h3 id="changelog-title">Latest Changelog</h3>
                 <a id="changelog-release-link" href="https://github.com/FoxNet-DDNet/Entity-Client-DDNet/releases" target="_blank" rel="noopener noreferrer">View on GitHub</a>
             </div>
             <p id="changelog-meta">Loading latest release notes...</p>
             <div id="changelog-content" class="changelog-content"></div>
-            <button id="changelog-toggle" class="changelog-toggle" type="button">Show more releases</button>
         </section>
     </main>
 

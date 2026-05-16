@@ -6,19 +6,48 @@ const changelogMeta = document.getElementById('changelog-meta');
 const changelogContent = document.getElementById('changelog-content');
 const changelogReleaseLink = document.getElementById('changelog-release-link');
 const changelogToggle = document.getElementById('changelog-toggle');
-const isChangelogPage = document.body?.dataset?.page === 'changelog';
+const downloadViewRadio = document.getElementById('view-download');
+const changelogViewRadio = document.getElementById('view-changelog');
+const changelogPanel = document.getElementById('changelog-panel');
+const viewSwitcher = document.querySelector('.view-switcher');
+const topBar = document.querySelector('.top-bar');
+const topBrandGhost = document.getElementById('top-brand-ghost');
+const compactViewportQuery = window.matchMedia('(max-width: 768px)');
 
 const RELEASES_REPO = 'FoxNet-DDNet/Entity-Client-DDNet';
 const RELEASES_URL = `https://github.com/${RELEASES_REPO}/releases`;
-const RELEASES_PER_PAGE = isChangelogPage ? 25 : 10;
+const RELEASES_PER_PAGE = 25;
 const RELEASES_API_URL = `https://api.github.com/repos/${RELEASES_REPO}/releases?per_page=${RELEASES_PER_PAGE}`;
 const RELEASES_CACHE_URL = '/releases-cache.json';
-const HOMEPAGE_VISIBLE_RELEASES = 1;
-const CHANGELOG_PAGE_URL = '/changelog';
 const GHOSTS_ASSET_BASE_PATH = '/assets/ghosts';
+const TOP_BAR_DEFAULT_GHOST_FILE = 'ghost_0.png';
+const GHOST_VARIANT_FILES = [
+    'ghost_0.png',
+    'ghost_1.png',
+    'ghost_2.png',
+    'ghost_3.png',
+    'ghost_4.png',
+    'ghost_5.png',
+    'ghost_6.png',
+    'ghost_7.png',
+    'ghost_8.png'
+];
+const TOP_BAR_GHOST_GLITCH_MIN_DELAY_MS = 600;
+const TOP_BAR_GHOST_GLITCH_MAX_DELAY_MS = 4500;
+const TOP_BAR_GHOST_GLITCH_DURATION_MS = 300;
+const TOP_BAR_GHOST_GLITCH_FRAME_INTERVAL_MS = 24;
+const VIEW_PANEL_TRANSITION_MS = 280;
 
 let changelogRenderedEntries = [];
 let changelogSourceLabel = '';
+let activeView = 'download';
+let lastScrollY = window.scrollY;
+let topBarHovered = false;
+let preferMinimizedTopBar = false;
+let previousTopBarGhostIndex = -1;
+let viewTransitionVersion = 0;
+let viewSwitcherIndicator = null;
+let viewSwitcherResizeObserver = null;
 
 const DOWNLOAD_URLS = {
     Windows: 'https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-windows.zip',
@@ -110,9 +139,6 @@ function detectOS() {
     const osDisplay = document.getElementById('os-display');
     const osName = document.getElementById('os-name');
 
-    if (osDisplay) {
-        osDisplay.textContent = `Detected OS: ${os}`;
-    }
     if (osName) {
         osName.textContent = os;
     }
@@ -174,12 +200,241 @@ function setChangelogFallback(message, details) {
     if (changelogReleaseLink) {
         changelogReleaseLink.href = RELEASES_URL;
     }
-    if (changelogToggle) {
-        changelogToggle.hidden = isChangelogPage;
-        if (!isChangelogPage) {
-            changelogToggle.textContent = 'Show more releases';
-        }
+}
+
+function updateViewSwitcherIndicator(instant = false) {
+    if (!viewSwitcherIndicator || !viewSwitcher) {
+        return;
     }
+
+    const activeLabel = viewSwitcher.querySelector("input[type='radio']:checked + label");
+    if (!activeLabel) {
+        viewSwitcherIndicator.style.opacity = '0';
+        return;
+    }
+
+    const switcherBounds = viewSwitcher.getBoundingClientRect();
+    const labelBounds = activeLabel.getBoundingClientRect();
+    const switcherStyles = window.getComputedStyle(viewSwitcher);
+    const paddingTop = parseFloat(switcherStyles.paddingTop) || 0;
+    const paddingBottom = parseFloat(switcherStyles.paddingBottom) || 0;
+    const leftOffset = labelBounds.left - switcherBounds.left;
+    const indicatorHeight = Math.max(0, switcherBounds.height - paddingTop - paddingBottom);
+
+    if (instant) {
+        viewSwitcherIndicator.style.transition = 'none';
+    }
+
+    viewSwitcherIndicator.style.top = `${paddingTop}px`;
+    viewSwitcherIndicator.style.height = `${indicatorHeight}px`;
+    viewSwitcherIndicator.style.width = `${labelBounds.width}px`;
+    viewSwitcherIndicator.style.transform = `translateX(${leftOffset}px)`;
+    viewSwitcherIndicator.style.opacity = '1';
+
+    if (instant) {
+        // Force reflow so the instant update is committed, then restore transitions.
+        void viewSwitcherIndicator.offsetWidth;
+        viewSwitcherIndicator.style.transition = '';
+    }
+}
+
+function initializeViewSwitcherIndicator() {
+    if (!viewSwitcher || viewSwitcherIndicator) {
+        return;
+    }
+
+    const indicator = document.createElement('span');
+    indicator.className = 'view-switcher-indicator';
+    indicator.setAttribute('aria-hidden', 'true');
+    viewSwitcher.appendChild(indicator);
+    viewSwitcherIndicator = indicator;
+
+    if (window.ResizeObserver) {
+        viewSwitcherResizeObserver = new ResizeObserver(() => {
+            updateViewSwitcherIndicator(true);
+        });
+        viewSwitcherResizeObserver.observe(viewSwitcher);
+    }
+
+    window.addEventListener('resize', () => updateViewSwitcherIndicator(true), { passive: true });
+    requestAnimationFrame(updateViewSwitcherIndicator);
+}
+
+function setPanelVisible(panel, visible) {
+    if (!panel) {
+        return;
+    }
+
+    panel.hidden = !visible;
+    panel.classList.remove('is-transitioning-in', 'is-transitioning-out');
+    if (!visible) {
+        panel.classList.add('is-transitioning-out');
+    }
+}
+
+function transitionPanelVisibility(panel, shouldShow, transitionVersion) {
+    if (!panel) {
+        return;
+    }
+
+    if (shouldShow) {
+        panel.hidden = false;
+        panel.classList.remove('is-transitioning-in');
+        panel.classList.add('is-transitioning-out');
+        // Force reflow so the browser can animate from the offset state.
+        void panel.offsetWidth;
+        if (transitionVersion !== viewTransitionVersion) {
+            return;
+        }
+        panel.classList.remove('is-transitioning-out');
+        panel.classList.add('is-transitioning-in');
+        return;
+    }
+
+    panel.classList.remove('is-transitioning-in', 'is-transitioning-out');
+    panel.hidden = true;
+}
+
+function setActiveView(view, syncHash = true, immediate = false) {
+    activeView = view === 'changelog' ? 'changelog' : 'download';
+    viewTransitionVersion += 1;
+
+    const shouldShowDownload = activeView === 'download';
+    const shouldShowChangelog = activeView === 'changelog';
+
+    if (immediate) {
+        setPanelVisible(downloadBox, shouldShowDownload);
+        setPanelVisible(changelogPanel, shouldShowChangelog);
+    } else {
+        transitionPanelVisibility(downloadBox, shouldShowDownload, viewTransitionVersion);
+        transitionPanelVisibility(changelogPanel, shouldShowChangelog, viewTransitionVersion);
+    }
+
+    if (downloadViewRadio) {
+        downloadViewRadio.checked = activeView === 'download';
+    }
+
+    if (changelogViewRadio) {
+        changelogViewRadio.checked = activeView === 'changelog';
+    }
+
+    updateViewSwitcherIndicator();
+
+    if (syncHash) {
+        const nextHash = activeView === 'changelog' ? '#changelog' : '';
+        const nextUrl = `${window.location.pathname}${window.location.search}${nextHash}`;
+        history.replaceState(null, '', nextUrl);
+    }
+
+    if (logo) {
+        logo.style.display = activeView === 'changelog' ? 'none' : '';
+    }
+
+    if (activeView === 'changelog') {
+        renderVisibleChangelogEntries();
+    }
+}
+
+function startTopBarGhostGlitch() {
+    if (!topBrandGhost) {
+        return;
+    }
+
+    topBrandGhost.src = `${GHOSTS_ASSET_BASE_PATH}/${TOP_BAR_DEFAULT_GHOST_FILE}`;
+
+    if (!GHOST_VARIANT_FILES.length) {
+        return;
+    }
+
+    function setRandomGhostFrame() {
+        let nextIndex = Math.floor(Math.random() * GHOST_VARIANT_FILES.length);
+        if (nextIndex === previousTopBarGhostIndex) {
+            nextIndex = (nextIndex + 1) % GHOST_VARIANT_FILES.length;
+        }
+
+        previousTopBarGhostIndex = nextIndex;
+        topBrandGhost.src = `${GHOSTS_ASSET_BASE_PATH}/${GHOST_VARIANT_FILES[nextIndex]}`;
+    }
+
+    function scheduleNextGlitch() {
+        const randomDelayRange = TOP_BAR_GHOST_GLITCH_MAX_DELAY_MS - TOP_BAR_GHOST_GLITCH_MIN_DELAY_MS;
+        const nextGlitchDelay = TOP_BAR_GHOST_GLITCH_MIN_DELAY_MS + Math.floor(Math.random() * (randomDelayRange + 1));
+
+        window.setTimeout(() => {
+            const glitchEndTime = Date.now() + TOP_BAR_GHOST_GLITCH_DURATION_MS;
+
+            // Update once immediately so each glitch burst starts instantly.
+            setRandomGhostFrame();
+
+            const glitchIntervalId = window.setInterval(() => {
+                setRandomGhostFrame();
+
+                if (Date.now() >= glitchEndTime) {
+                    window.clearInterval(glitchIntervalId);
+                    topBrandGhost.src = `${GHOSTS_ASSET_BASE_PATH}/${TOP_BAR_DEFAULT_GHOST_FILE}`;
+                    scheduleNextGlitch();
+                }
+            }, TOP_BAR_GHOST_GLITCH_FRAME_INTERVAL_MS);
+        }, nextGlitchDelay);
+    }
+
+    scheduleNextGlitch();
+}
+
+function setTopBarMinimized(minimized) {
+    if (!topBar) {
+        return;
+    }
+
+    const shouldMinimize = minimized && !topBarHovered && !compactViewportQuery.matches;
+    topBar.classList.toggle('is-minimized', shouldMinimize);
+}
+
+function updateTopBarStateFromScroll() {
+    if (!topBar) {
+        return;
+    }
+
+    const currentScrollY = window.scrollY;
+    const delta = currentScrollY - lastScrollY;
+
+    if (compactViewportQuery.matches || currentScrollY <= 30) {
+        preferMinimizedTopBar = false;
+    } else if (delta > 3) {
+        preferMinimizedTopBar = true;
+    } else if (delta < -3) {
+        preferMinimizedTopBar = false;
+    }
+
+    setTopBarMinimized(preferMinimizedTopBar);
+    lastScrollY = currentScrollY;
+}
+
+function initializeTopBarBehavior() {
+    if (!topBar) {
+        return;
+    }
+
+    topBar.addEventListener('mouseenter', () => {
+        topBarHovered = true;
+        setTopBarMinimized(false);
+    });
+
+    topBar.addEventListener('mouseleave', () => {
+        topBarHovered = false;
+        setTopBarMinimized(preferMinimizedTopBar);
+    });
+
+    window.addEventListener('scroll', updateTopBarStateFromScroll, { passive: true });
+
+    compactViewportQuery.addEventListener('change', () => {
+        if (compactViewportQuery.matches) {
+            preferMinimizedTopBar = false;
+        }
+        setTopBarMinimized(preferMinimizedTopBar);
+    });
+
+    updateTopBarStateFromScroll();
 }
 
 function getReleaseBodyText(release) {
@@ -281,23 +536,27 @@ function updateChangelogMetaText() {
         return;
     }
 
-    const summary = isChangelogPage
-        ? `Showing ${total} recent releases`
-        : `Showing the latest release`;
+    const summary = activeView === 'changelog'
+        ? `Showing ${total} releases`
+        : `Loaded ${total} releases`;
 
     changelogMeta.textContent = changelogSourceLabel ? `${summary} - ${changelogSourceLabel}` : summary;
 }
 
-async function buildReleaseEntryHtml(release) {
+async function buildReleaseEntryHtml(release, isLatest = false) {
     const normalizedRelease = normalizeRelease(release);
     const releaseDate = formatReleaseDate(normalizedRelease.publishedAt);
     const releaseBody = getReleaseBodyText(normalizedRelease);
     const renderedBody = renderMarkdownLocally(releaseBody);
+    const latestBadge = isLatest ? '<span class="release-latest-badge">Latest</span>' : '';
 
     return `
         <article class="release-entry">
             <div class="release-heading">
-                <h4 class="release-title"><a href="${escapeHtml(normalizedRelease.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(normalizedRelease.name)}</a></h4>
+                <div class="release-title-row">
+                    <h4 class="release-title"><a href="${escapeHtml(normalizedRelease.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(normalizedRelease.name)}</a></h4>
+                    ${latestBadge}
+                </div>
                 <p class="release-date">${escapeHtml(releaseDate)}</p>
             </div>
             <div class="release-body">${renderedBody}</div>
@@ -310,13 +569,7 @@ function updateChangelogToggleState() {
         return;
     }
 
-    if (isChangelogPage) {
-        changelogToggle.hidden = true;
-        return;
-    }
-
-    changelogToggle.hidden = false;
-    changelogToggle.textContent = 'Show more releases';
+    changelogToggle.hidden = true;
 }
 
 function renderVisibleChangelogEntries() {
@@ -324,9 +577,7 @@ function renderVisibleChangelogEntries() {
         return;
     }
 
-    const visibleCount = isChangelogPage
-        ? changelogRenderedEntries.length
-        : Math.min(HOMEPAGE_VISIBLE_RELEASES, changelogRenderedEntries.length);
+    const visibleCount = changelogRenderedEntries.length;
 
     changelogContent.innerHTML = changelogRenderedEntries.slice(0, visibleCount).join('');
 
@@ -350,8 +601,8 @@ async function loadChangelog() {
     try {
         const releases = await fetchRecentReleases();
         changelogSourceLabel = 'Live from GitHub';
-        const releasesToRender = isChangelogPage ? releases : releases.slice(0, HOMEPAGE_VISIBLE_RELEASES);
-        changelogRenderedEntries = await Promise.all(releasesToRender.map(buildReleaseEntryHtml));
+        const releasesToRender = releases;
+        changelogRenderedEntries = await Promise.all(releasesToRender.map((r, i) => buildReleaseEntryHtml(r, i === 0)));
     } catch (error) {
         try {
             const cacheData = await fetchCachedReleases();
@@ -359,10 +610,8 @@ async function loadChangelog() {
             changelogSourceLabel = isRateLimitError(error)
                 ? `GitHub API rate limited - cached copy from ${updatedAt}`
                 : `Using cached copy from ${updatedAt}`;
-            const cachedReleasesToRender = isChangelogPage
-                ? cacheData.releases
-                : cacheData.releases.slice(0, HOMEPAGE_VISIBLE_RELEASES);
-            changelogRenderedEntries = await Promise.all(cachedReleasesToRender.map(buildReleaseEntryHtml));
+            const cachedReleasesToRender = cacheData.releases;
+            changelogRenderedEntries = await Promise.all(cachedReleasesToRender.map((r, i) => buildReleaseEntryHtml(r, i === 0)));
         } catch (cacheError) {
             const fallbackMessage = isRateLimitError(error)
                 ? 'GitHub API rate limit reached.'
@@ -376,12 +625,6 @@ async function loadChangelog() {
     }
 
     renderVisibleChangelogEntries();
-
-    if (changelogToggle && !isChangelogPage) {
-        changelogToggle.onclick = () => {
-            window.location.href = CHANGELOG_PAGE_URL;
-        };
-    }
 }
 
 // Generate decorative ghosts with deterministic, size-aware spacing.
@@ -389,7 +632,8 @@ function createGhosts(count = 18) {
     const container = document.getElementById('floating-ghosts') || document.querySelector('.floating-ghosts');
     if (!container) return;
 
-    const maxAssetIndex = 20;
+    if (!GHOST_VARIANT_FILES.length) return;
+
     const placedGhosts = [];
     const containerWidth = Math.max(container.clientWidth, window.innerWidth, 1);
     const containerHeight = Math.max(container.clientHeight, window.innerHeight, 1);
@@ -437,8 +681,8 @@ function createGhosts(count = 18) {
 
     for (let i = 0; i < targetGhostCount; i++) {
         const img = document.createElement('img');
-        const idx = Math.floor(random() * (maxAssetIndex + 1));
-        img.src = `${GHOSTS_ASSET_BASE_PATH}/ghost_${idx}.png`;
+        const ghostFile = GHOST_VARIANT_FILES[Math.floor(random() * GHOST_VARIANT_FILES.length)];
+        img.src = `${GHOSTS_ASSET_BASE_PATH}/${ghostFile}`;
         img.className = 'ghost';
 
         // 40px - 220px
@@ -486,5 +730,50 @@ function createGhosts(count = 18) {
 
 createGhosts(26);
 
+if (downloadViewRadio) {
+    downloadViewRadio.addEventListener('change', () => {
+        if (downloadViewRadio.checked) {
+            setActiveView('download');
+        }
+    });
+}
+
+if (changelogViewRadio) {
+    changelogViewRadio.addEventListener('change', () => {
+        if (changelogViewRadio.checked) {
+            setActiveView('changelog');
+        }
+    });
+}
+
+if (window.location.hash === '#changelog') {
+    setActiveView('changelog', false, true);
+} else {
+    setActiveView('download', false, true);
+}
+
+initializeViewSwitcherIndicator();
+startTopBarGhostGlitch();
+initializeTopBarBehavior();
 detectOS();
 loadChangelog();
+
+const topLinksToggle = document.getElementById('top-links-toggle');
+const topLinksDropdown = document.getElementById('top-links-dropdown');
+
+if (topLinksToggle && topLinksDropdown) {
+    topLinksToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = topLinksDropdown.classList.toggle('is-open');
+        topLinksToggle.classList.toggle('is-open', isOpen);
+        topLinksToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    document.addEventListener('click', () => {
+        topLinksDropdown.classList.remove('is-open');
+        topLinksToggle.classList.remove('is-open');
+        topLinksToggle.setAttribute('aria-expanded', 'false');
+    });
+
+    topLinksDropdown.addEventListener('click', (e) => e.stopPropagation());
+}
