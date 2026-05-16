@@ -225,6 +225,9 @@ body::before {
 .top-links-menu {
     position: relative;
     justify-self: end;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
 }
 
 .top-links-toggle {
@@ -689,36 +692,66 @@ body::before {
 @media (max-width: 768px) {
     .top-bar {
         width: calc(100% - 20px);
-        padding: 10px;
-        flex-direction: column;
-        align-items: stretch;
+        padding: 10px 12px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            'brand links'
+            'switch switch';
+        gap: 10px;
     }
 
     .top-brand {
-        justify-content: center;
-        text-align: center;
+        grid-area: brand;
+        justify-self: start;
+        font-size: 1.04rem;
+        gap: 8px;
+        min-width: 0;
     }
 
     .top-brand-ghost {
-        width: 34px;
-        height: 34px;
-        flex-basis: 34px;
+        width: 28px;
+        height: 28px;
+        flex-basis: 28px;
+    }
+
+    .top-brand-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .top-links-menu {
+        grid-area: links;
+        justify-self: end;
     }
 
     .view-switcher {
+        grid-area: switch;
         width: 100%;
-        justify-content: center;
+        justify-content: stretch;
+        gap: 4px;
+        padding: 4px;
     }
 
     .view-switcher label {
         min-width: 0;
-        width: 100%;
+        flex: 1 1 0;
+        width: auto;
+        padding: 8px 10px;
+        font-size: 0.88rem;
+    }
+
+    .top-links-dropdown {
+        right: 0;
+        min-width: 170px;
+        max-width: min(220px, calc(100vw - 28px));
     }
 
     .center-logo {
-        max-width: 420px;
-        max-height: 280px;
-        margin: 30px auto 15px auto;
+        width: min(84vw, 340px);
+        max-width: 340px;
+        max-height: 220px;
+        margin: 24px auto 12px auto;
     }
 
     .download-box {
@@ -762,6 +795,32 @@ body::before {
 
     .not-your-os {
         font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-bar {
+        width: calc(100% - 14px);
+        margin-top: 6px;
+        padding: 8px 10px;
+        border-radius: 14px;
+    }
+
+    .top-brand {
+        font-size: 0.94rem;
+        letter-spacing: 0.02em;
+    }
+
+    .view-switcher label {
+        font-size: 0.82rem;
+        padding: 7px 8px;
+    }
+
+    .center-logo {
+        width: min(80vw, 300px);
+        max-width: 300px;
+        max-height: 190px;
+        margin-top: 18px;
     }
 }
 
