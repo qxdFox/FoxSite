@@ -41,6 +41,9 @@ const VIEW_PANEL_TRANSITION_MS = 280;
 let changelogRenderedEntries = [];
 let changelogSourceLabel = '';
 let activeView = 'download';
+// Each view keeps its own scroll offset so switching between Download and
+// Changelog doesn't carry one view's scroll position into the other.
+const viewScrollPositions = { download: 0, changelog: 0 };
 let lastScrollY = window.scrollY;
 let topBarHovered = false;
 let preferMinimizedTopBar = false;
@@ -337,7 +340,16 @@ function transitionPanelVisibility(panel, shouldShow, transitionVersion) {
 }
 
 function setActiveView(view, syncHash = true, immediate = false) {
-    activeView = view === 'changelog' ? 'changelog' : 'download';
+    const nextView = view === 'changelog' ? 'changelog' : 'download';
+    const previousView = activeView;
+    const viewChanged = nextView !== previousView;
+
+    // Save where we were in the view we're leaving before swapping content.
+    if (viewChanged) {
+        viewScrollPositions[previousView] = window.scrollY;
+    }
+
+    activeView = nextView;
     viewTransitionVersion += 1;
 
     const shouldShowDownload = activeView === 'download';
@@ -381,6 +393,12 @@ function setActiveView(view, syncHash = true, immediate = false) {
 
     if (activeView === 'changelog') {
         renderVisibleChangelogEntries();
+    }
+
+    // Restore the entered view's own scroll offset (content is already laid out
+    // by this point), so each view remembers where the user last was.
+    if (viewChanged) {
+        window.scrollTo(0, viewScrollPositions[nextView]);
     }
 }
 
