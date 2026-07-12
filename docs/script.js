@@ -802,10 +802,10 @@ const SETTINGS_PAGES_BASE_PATH = 'assets/setting_pages';
 const SETTINGS_PAGES = [
     { file: 'Settings.png', label: 'Settings' },
     { file: 'Visual.png', label: 'Visual' },
-    { file: 'Player actions.png', label: 'Player Actions' },
-    { file: 'Bindwheel.png', label: 'Bindwheel' },
-    { file: 'Status bar.png', label: 'Status Bar' },
     { file: 'Warlist.png', label: 'Warlist' },
+    { file: 'Status bar.png', label: 'Status Bar' },
+    { file: 'Bindwheel.png', label: 'Bindwheel' },
+    { file: 'Player actions.png', label: 'Player Actions' },
     { file: 'Info.png', label: 'Info' }
 ];
 
@@ -922,14 +922,17 @@ function initializeSettingsGallery() {
     const lightboxImg = document.getElementById('lightbox-img');
     const lightboxCaption = document.getElementById('lightbox-caption');
     const lightboxClose = document.getElementById('lightbox-close');
+    const lightboxPrev = document.getElementById('lightbox-prev');
+    const lightboxNext = document.getElementById('lightbox-next');
 
     if (!grid || !lightbox || !lightboxImg || !lightboxCaption) {
         return;
     }
 
     let lastFocusedElement = null;
+    let currentIndex = -1;
 
-    SETTINGS_PAGES.forEach(({ file, label }) => {
+    SETTINGS_PAGES.forEach(({ file, label }, index) => {
         const src = settingsPageSrc(file);
 
         const button = document.createElement('button');
@@ -953,7 +956,7 @@ function initializeSettingsGallery() {
 
         button.appendChild(frame);
         button.appendChild(caption);
-        button.addEventListener('click', () => openLightbox(src, label));
+        button.addEventListener('click', () => openLightbox(index));
 
         grid.appendChild(button);
     });
@@ -961,20 +964,32 @@ function initializeSettingsGallery() {
     const lightboxStage = lightbox.querySelector('.lightbox-stage');
     const pinchZoom = initPinchZoom(lightboxStage, lightboxImg);
 
-    function openLightbox(src, label) {
-        lastFocusedElement = document.activeElement;
+    function showImageAt(index) {
+        const total = SETTINGS_PAGES.length;
+        // Wrap around at both ends.
+        currentIndex = (index + total) % total;
+        const { file, label } = SETTINGS_PAGES[currentIndex];
+
         pinchZoom.reset();
-        lightboxImg.src = src;
+        lightboxImg.src = settingsPageSrc(file);
         lightboxImg.alt = `${label} settings page`;
         lightboxCaption.textContent = label;
-        lightbox.hidden = false;
-        // Reset scroll of the stage each time it opens.
+
+        // Reset stage scroll for the newly shown image.
         if (lightboxStage) {
             lightboxStage.scrollTop = 0;
             lightboxStage.scrollLeft = 0;
         }
+    }
+
+    function openLightbox(index) {
+        lastFocusedElement = document.activeElement;
+        showImageAt(index);
+        lightbox.hidden = false;
         document.body.style.overflow = 'hidden';
-        if (lightboxClose) {
+        if (lightboxNext) {
+            lightboxNext.focus();
+        } else if (lightboxClose) {
             lightboxClose.focus();
         }
     }
@@ -984,13 +999,36 @@ function initializeSettingsGallery() {
         pinchZoom.reset();
         lightboxImg.removeAttribute('src');
         document.body.style.overflow = '';
+        currentIndex = -1;
         if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
             lastFocusedElement.focus();
         }
     }
 
+    function showPrev() {
+        showImageAt(currentIndex - 1);
+    }
+
+    function showNext() {
+        showImageAt(currentIndex + 1);
+    }
+
     if (lightboxClose) {
         lightboxClose.addEventListener('click', closeLightbox);
+    }
+
+    if (lightboxPrev) {
+        lightboxPrev.addEventListener('click', (event) => {
+            event.stopPropagation();
+            showPrev();
+        });
+    }
+
+    if (lightboxNext) {
+        lightboxNext.addEventListener('click', (event) => {
+            event.stopPropagation();
+            showNext();
+        });
     }
 
     // Clicking the backdrop (outside the image) closes the lightbox. The image
@@ -1003,8 +1041,15 @@ function initializeSettingsGallery() {
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !lightbox.hidden) {
+        if (lightbox.hidden) {
+            return;
+        }
+        if (event.key === 'Escape') {
             closeLightbox();
+        } else if (event.key === 'ArrowLeft') {
+            showPrev();
+        } else if (event.key === 'ArrowRight') {
+            showNext();
         }
     });
 }
