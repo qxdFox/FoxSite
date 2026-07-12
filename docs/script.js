@@ -5,7 +5,6 @@ const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 const changelogMeta = document.getElementById('changelog-meta');
 const changelogContent = document.getElementById('changelog-content');
 const changelogReleaseLink = document.getElementById('changelog-release-link');
-const changelogToggle = document.getElementById('changelog-toggle');
 const downloadViewRadio = document.getElementById('view-download');
 const changelogViewRadio = document.getElementById('view-changelog');
 const changelogPanel = document.getElementById('changelog-panel');
@@ -13,6 +12,7 @@ const viewSwitcher = document.querySelector('.view-switcher');
 const topBar = document.querySelector('.top-bar');
 const topBrandGhost = document.getElementById('top-brand-ghost');
 const compactViewportQuery = window.matchMedia('(max-width: 768px)');
+const settingsGallery = document.getElementById('settings-gallery');
 
 const RELEASES_REPO = 'FoxNet-DDNet/Entity-Client-DDNet';
 const RELEASES_URL = `https://github.com/${RELEASES_REPO}/releases`;
@@ -49,62 +49,97 @@ let viewTransitionVersion = 0;
 let viewSwitcherIndicator = null;
 let viewSwitcherResizeObserver = null;
 
-const DOWNLOAD_URLS = {
-    Windows: 'https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-windows.zip',
-    macOS: 'https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-macOS.dmg',
-    Linux: 'https://github.com/qxdFox/Entity-Client/releases/latest/download/E-Client-ubuntu.tar.xz'
+// Download assets live on the same repo the changelog is pulled from
+// (RELEASES_REPO), so the binary and the release notes can't drift apart.
+const DOWNLOAD_ASSET_FILES = {
+    Windows: 'E-Client-windows.zip',
+    macOS: 'E-Client-macOS.dmg',
+    Linux: 'E-Client-ubuntu.tar.xz'
 };
+const DOWNLOAD_URLS = Object.fromEntries(
+    Object.entries(DOWNLOAD_ASSET_FILES).map(([os, file]) => [
+        os,
+        `https://github.com/${RELEASES_REPO}/releases/latest/download/${file}`
+    ])
+);
 
 if (logo) {
     // Open project repository when clicking the logo.
     logo.addEventListener('click', () => {
-        window.open('https://github.com/qxdFox/Entity-Client', '_blank');
+        window.open(`https://github.com/${RELEASES_REPO}`, '_blank');
     });
 }
 
-// Make the logo move up and down
+// Make the logo move up and down. The loop parks itself whenever the logo is
+// hidden (changelog view) and is restarted when the download view returns.
 let angle = 0;
+let logoRafId = null;
 function moveLogo() {
-    if (!logo) return;
+    if (!logo || logo.style.display === 'none') {
+        logoRafId = null;
+        return;
+    }
 
     const offsetY = Math.sin(angle) * 10;
     angle += 0.005;
 
-    const isHovered = logo.matches(':hover');
-    const scale = isHovered ? 1.05 : 1;
+    const scale = logo.matches(':hover') ? 1.05 : 1;
     logo.style.transform = `translateY(${offsetY}px) scale(${scale})`;
 
-    requestAnimationFrame(moveLogo);
+    logoRafId = requestAnimationFrame(moveLogo);
 }
 
-if (logo) {
-    moveLogo();
+function startLogoAnimation() {
+    if (logo && logoRafId === null && logo.style.display !== 'none') {
+        logoRafId = requestAnimationFrame(moveLogo);
+    }
 }
 
-// Update the download card gradient based on cursor position.
+startLogoAnimation();
+
+// Update the download card gradient based on cursor position. Coalesced into a
+// single rAF so we do at most one layout read + style write per frame, and only
+// while the download view is actually visible.
+let pointerX = 0;
+let pointerY = 0;
+let spotlightRafId = null;
+
+function paintDownloadSpotlight() {
+    spotlightRafId = null;
+    if (!downloadBox || activeView !== 'download') return;
+
+    const rect = downloadBox.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    const xPercent = ((pointerX - rect.left) / rect.width) * 100;
+    const yPercent = ((pointerY - rect.top) / rect.height) * 100;
+
+    // Translucent so the box blends with the page gradient behind it (paired
+    // with the box's backdrop blur for a frosted-glass look) at any scroll
+    // position. The spotlight center is more transparent than the edges, so the
+    // darker page background shows through there — a dark spot that follows the
+    // cursor, matching the original look.
+    const lightGradient = `radial-gradient(circle 250px at ${xPercent}% ${yPercent}%, rgba(51, 92, 226, 0.12), rgba(51, 92, 226, 0.45))`;
+    const darkGradient = `radial-gradient(circle 250px at ${xPercent}% ${yPercent}%, rgba(15, 30, 60, 0.12), rgba(15, 30, 60, 0.5))`;
+
+    downloadBox.style.background = darkModeQuery.matches ? darkGradient : lightGradient;
+}
+
 document.addEventListener('mousemove', (event) => {
-    if (!downloadBox) return;
-
-    const mouseX = event.clientX;
-    const mouseY = event.clientY;
-    const isDarkMode = darkModeQuery.matches;
-
-    const downloadBoxRect = downloadBox.getBoundingClientRect();
-    const downloadBoxXPercent = ((mouseX - downloadBoxRect.left) / downloadBoxRect.width) * 100;
-    const downloadBoxYPercent = ((mouseY - downloadBoxRect.top) / downloadBoxRect.height) * 100;
-
-    const lightGradient = `radial-gradient(circle 250px at ${downloadBoxXPercent}% ${downloadBoxYPercent}%, rgb(51, 92, 226, 0.1), rgb(51, 92, 226))`;
-    const darkGradient = `radial-gradient(circle 250px at ${downloadBoxXPercent}% ${downloadBoxYPercent}%, rgb(15, 30, 60, 0.1), rgb(15, 30, 60))`;
-
-    downloadBox.style.background = isDarkMode ? darkGradient : lightGradient;
-});
+    if (!downloadBox || activeView !== 'download') return;
+    pointerX = event.clientX;
+    pointerY = event.clientY;
+    if (spotlightRafId === null) {
+        spotlightRafId = requestAnimationFrame(paintDownloadSpotlight);
+    }
+}, { passive: true });
 
 // Function to update the top bar, os box, and body background based on the current theme
 function updateTheme() {
     const isDarkMode = darkModeQuery.matches;
 
     if (downloadBox) {
-        downloadBox.style.background = isDarkMode ? 'rgb(15, 30, 60)' : 'rgb(51, 92, 226)';
+        downloadBox.style.background = isDarkMode ? 'rgba(15, 30, 60, 0.5)' : 'rgba(51, 92, 226, 0.4)';
     }
 
     body.style.background = isDarkMode
@@ -124,23 +159,22 @@ function detectOS() {
     const userAgent = navigator.userAgent.toLowerCase();
     let os = 'Unknown OS';
 
-    if (platform.includes('win')) {
+    // Check mobile/touch platforms first: Android reports platform "Linux ..."
+    // and iPadOS 13+ reports platform "MacIntel", so a platform-first check
+    // would misdetect them as desktop Linux/macOS and offer a broken download.
+    if (/android/.test(userAgent)) {
+        os = 'Android';
+    } else if (/iphone|ipad|ipod/.test(userAgent)) {
+        os = 'iOS';
+    } else if (platform === 'macintel' && navigator.maxTouchPoints > 1) {
+        // iPad in desktop mode: MacIntel platform but a touchscreen (Macs report 0).
+        os = 'iOS';
+    } else if (platform.includes('win')) {
         os = 'Windows';
     } else if (platform.includes('mac')) {
         os = 'macOS';
     } else if (platform.includes('linux')) {
         os = 'Linux';
-    } else if (/android/.test(userAgent)) {
-        os = 'Android';
-    } else if (/iphone|ipad|ipod/.test(userAgent)) {
-        os = 'iOS';
-    }
-
-    const osDisplay = document.getElementById('os-display');
-    const osName = document.getElementById('os-name');
-
-    if (osName) {
-        osName.textContent = os;
     }
 
     const downloadButton = document.getElementById('download-button');
@@ -148,11 +182,18 @@ function detectOS() {
 
     const downloadUrl = DOWNLOAD_URLS[os];
     if (downloadUrl) {
+        downloadButton.disabled = false;
+        downloadButton.textContent = `Download for ${os}`;
         downloadButton.onclick = () => window.open(downloadUrl, '_blank');
-        return;
+    } else {
+        // No build for this platform: make the button non-interactive and say
+        // so directly, instead of a clickable button that pops up an alert.
+        downloadButton.disabled = true;
+        downloadButton.onclick = null;
+        downloadButton.textContent = os === 'Unknown OS'
+            ? 'No download for your system'
+            : `No download for ${os}`;
     }
-
-    downloadButton.onclick = () => alert('No download available for your OS.');
 }
 
 function createSeededRandom(seed) {
@@ -310,6 +351,11 @@ function setActiveView(view, syncHash = true, immediate = false) {
         transitionPanelVisibility(changelogPanel, shouldShowChangelog, viewTransitionVersion);
     }
 
+    // The settings gallery only belongs to the download view.
+    if (settingsGallery) {
+        settingsGallery.hidden = !shouldShowDownload;
+    }
+
     if (downloadViewRadio) {
         downloadViewRadio.checked = activeView === 'download';
     }
@@ -328,6 +374,9 @@ function setActiveView(view, syncHash = true, immediate = false) {
 
     if (logo) {
         logo.style.display = activeView === 'changelog' ? 'none' : '';
+        if (activeView !== 'changelog') {
+            startLogoAnimation();
+        }
     }
 
     if (activeView === 'changelog') {
@@ -564,14 +613,6 @@ async function buildReleaseEntryHtml(release, isLatest = false) {
     `;
 }
 
-function updateChangelogToggleState() {
-    if (!changelogToggle) {
-        return;
-    }
-
-    changelogToggle.hidden = true;
-}
-
 function renderVisibleChangelogEntries() {
     if (!changelogContent) {
         return;
@@ -588,7 +629,6 @@ function renderVisibleChangelogEntries() {
     });
 
     updateChangelogMetaText();
-    updateChangelogToggleState();
 }
 
 async function loadChangelog() {
@@ -730,10 +770,251 @@ function createGhosts(count = 18) {
 
 createGhosts(26);
 
+// Re-lay the ghosts for the new viewport after a resize / orientation change so
+// they don't bunch up or clip. Debounced so we only rebuild once the resize
+// settles, and the seeded layout stays stable for a given viewport size.
+let ghostResizeTimer = null;
+window.addEventListener('resize', () => {
+    window.clearTimeout(ghostResizeTimer);
+    ghostResizeTimer = window.setTimeout(() => createGhosts(26), 200);
+}, { passive: true });
+
+// --- Settings pages gallery + lightbox -------------------------------------
+const SETTINGS_PAGES_BASE_PATH = 'assets/setting_pages';
+const SETTINGS_PAGES = [
+    { file: 'Settings.png', label: 'Settings' },
+    { file: 'Visual.png', label: 'Visual' },
+    { file: 'Player actions.png', label: 'Player Actions' },
+    { file: 'Bindwheel.png', label: 'Bindwheel' },
+    { file: 'Status bar.png', label: 'Status Bar' },
+    { file: 'Warlist.png', label: 'Warlist' },
+    { file: 'Info.png', label: 'Info' }
+];
+
+function settingsPageSrc(file) {
+    return `${SETTINGS_PAGES_BASE_PATH}/${encodeURIComponent(file)}`;
+}
+
+// Two-finger pinch-to-zoom + drag-to-pan for the lightbox image. Driven
+// entirely by touch events, so it only ever engages on touchscreens — mouse
+// users on desktop never trigger it and just see the image fit the stage.
+function initPinchZoom(stage, img) {
+    const MIN_SCALE = 1;
+    const MAX_SCALE = 4;
+
+    let scale = 1;
+    let translateX = 0;
+    let translateY = 0;
+    let pinchStartDistance = 0;
+    let pinchStartScale = 1;
+    let panStart = null; // { x, y, translateX, translateY }
+
+    function applyTransform() {
+        img.style.transform = scale === 1 ? '' : `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        img.classList.toggle('is-zoomed', scale > 1.01);
+    }
+
+    function reset() {
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+        panStart = null;
+        img.style.transform = '';
+        img.classList.remove('is-zoomed');
+    }
+
+    function clampTranslate() {
+        if (!stage) {
+            return;
+        }
+        const stageRect = stage.getBoundingClientRect();
+        const scaledWidth = img.offsetWidth * scale;
+        const scaledHeight = img.offsetHeight * scale;
+        const maxX = Math.max(0, (scaledWidth - stageRect.width) / 2);
+        const maxY = Math.max(0, (scaledHeight - stageRect.height) / 2);
+        translateX = Math.min(maxX, Math.max(-maxX, translateX));
+        translateY = Math.min(maxY, Math.max(-maxY, translateY));
+    }
+
+    function touchDistance(t0, t1) {
+        return Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+    }
+
+    img.addEventListener('touchstart', (event) => {
+        if (event.touches.length === 2) {
+            pinchStartDistance = touchDistance(event.touches[0], event.touches[1]);
+            pinchStartScale = scale;
+            panStart = null;
+        } else if (event.touches.length === 1 && scale > 1) {
+            panStart = {
+                x: event.touches[0].clientX,
+                y: event.touches[0].clientY,
+                translateX,
+                translateY
+            };
+        }
+    }, { passive: true });
+
+    img.addEventListener('touchmove', (event) => {
+        if (event.touches.length === 2 && pinchStartDistance) {
+            event.preventDefault();
+            const nextDistance = touchDistance(event.touches[0], event.touches[1]);
+            scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, pinchStartScale * (nextDistance / pinchStartDistance)));
+            if (scale <= MIN_SCALE) {
+                translateX = 0;
+                translateY = 0;
+            }
+            clampTranslate();
+            applyTransform();
+        } else if (event.touches.length === 1 && panStart && scale > 1) {
+            event.preventDefault();
+            translateX = panStart.translateX + (event.touches[0].clientX - panStart.x);
+            translateY = panStart.translateY + (event.touches[0].clientY - panStart.y);
+            clampTranslate();
+            applyTransform();
+        }
+    }, { passive: false });
+
+    function endTouch(event) {
+        if (event.touches.length === 1 && scale > 1) {
+            // One finger lifted out of a pinch — hand off to single-finger panning.
+            panStart = {
+                x: event.touches[0].clientX,
+                y: event.touches[0].clientY,
+                translateX,
+                translateY
+            };
+        } else if (event.touches.length === 0) {
+            panStart = null;
+            if (scale <= 1.01) {
+                reset();
+            }
+        }
+    }
+
+    img.addEventListener('touchend', endTouch);
+    img.addEventListener('touchcancel', endTouch);
+
+    return { reset };
+}
+
+function initializeSettingsGallery() {
+    const grid = document.getElementById('settings-grid');
+    const lightbox = document.getElementById('settings-lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    const lightboxClose = document.getElementById('lightbox-close');
+
+    if (!grid || !lightbox || !lightboxImg || !lightboxCaption) {
+        return;
+    }
+
+    let lastFocusedElement = null;
+
+    SETTINGS_PAGES.forEach(({ file, label }) => {
+        const src = settingsPageSrc(file);
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'settings-thumb';
+        button.setAttribute('aria-label', `Enlarge ${label} settings page`);
+
+        const frame = document.createElement('div');
+        frame.className = 'settings-thumb-frame';
+
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = `${label} settings page`;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        frame.appendChild(img);
+
+        const caption = document.createElement('span');
+        caption.className = 'settings-thumb-label';
+        caption.textContent = label;
+
+        button.appendChild(frame);
+        button.appendChild(caption);
+        button.addEventListener('click', () => openLightbox(src, label));
+
+        grid.appendChild(button);
+    });
+
+    const lightboxStage = lightbox.querySelector('.lightbox-stage');
+    const pinchZoom = initPinchZoom(lightboxStage, lightboxImg);
+
+    function openLightbox(src, label) {
+        lastFocusedElement = document.activeElement;
+        pinchZoom.reset();
+        lightboxImg.src = src;
+        lightboxImg.alt = `${label} settings page`;
+        lightboxCaption.textContent = label;
+        lightbox.hidden = false;
+        // Reset scroll of the stage each time it opens.
+        if (lightboxStage) {
+            lightboxStage.scrollTop = 0;
+            lightboxStage.scrollLeft = 0;
+        }
+        document.body.style.overflow = 'hidden';
+        if (lightboxClose) {
+            lightboxClose.focus();
+        }
+    }
+
+    function closeLightbox() {
+        lightbox.hidden = true;
+        pinchZoom.reset();
+        lightboxImg.removeAttribute('src');
+        document.body.style.overflow = '';
+        if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+            lastFocusedElement.focus();
+        }
+    }
+
+    if (lightboxClose) {
+        lightboxClose.addEventListener('click', closeLightbox);
+    }
+
+    // Clicking the backdrop (outside the image) closes the lightbox. The image
+    // itself handles its own click (zoom) and stops propagation, so it won't
+    // close here.
+    lightbox.addEventListener('click', (event) => {
+        if (event.target === lightbox || event.target.classList.contains('lightbox-figure') || event.target.classList.contains('lightbox-stage')) {
+            closeLightbox();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !lightbox.hidden) {
+            closeLightbox();
+        }
+    });
+}
+
+initializeSettingsGallery();
+
 if (downloadViewRadio) {
     downloadViewRadio.addEventListener('change', () => {
         if (downloadViewRadio.checked) {
             setActiveView('download');
+        }
+    });
+}
+
+// Clicking "Download" while already on the download view scrolls down to the
+// button (the images sit above it). The radio's `change` doesn't fire when it's
+// already selected, so this is handled on the label's click. The label click
+// listener runs before the radio's default activation, so `activeView` here
+// still reflects the view *before* this click — meaning it's only 'download'
+// when we were already on that view.
+const downloadViewLabel = document.querySelector('label[for="view-download"]');
+if (downloadViewLabel) {
+    downloadViewLabel.addEventListener('click', () => {
+        if (activeView === 'download') {
+            const downloadButton = document.getElementById('download-button');
+            if (downloadButton) {
+                downloadButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
     });
 }

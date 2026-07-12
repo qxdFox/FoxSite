@@ -206,9 +206,15 @@ body::before {
     pointer-events: none;
 }
 
+#settings-gallery {
+    grid-area: 1 / 1;
+}
+
 #download-panel,
 #changelog-panel {
-    grid-area: 1 / 1;
+    /* Row 2: below the settings gallery on the download view, while the two
+       panels overlap each other so switching views cross-fades in place. */
+    grid-area: 2 / 1;
     transform: translateY(0);
     transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform;
@@ -654,6 +660,23 @@ body::before {
     transform: translateY(0);
 }
 
+/* No build available for the visitor's OS: clearly inert, not clickable. */
+#download-button:disabled {
+    cursor: not-allowed;
+    background: rgba(120, 132, 156, 0.35);
+    box-shadow: none;
+    opacity: 0.85;
+}
+
+#download-button:disabled::before {
+    display: none;
+}
+
+#download-button:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
 .not-your-os {
     font-size: 14px;
     display: block;
@@ -924,6 +947,256 @@ body::before {
     opacity: 0.9;
     margin: 0;
     line-height: 1.5;
+}
+
+/* Settings pages gallery */
+.settings-gallery {
+    width: 90%;
+    max-width: 1100px;
+    margin: 10px auto 40px auto;
+    color: var(--text-on-dark);
+}
+
+.settings-gallery-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.settings-gallery-header p {
+    margin: 0 auto;
+    max-width: 840px;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: white;
+    opacity: 0.9;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.settings-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px;
+}
+
+.settings-thumb {
+    flex: 0 0 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.settings-thumb:hover,
+.settings-thumb:focus-visible {
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.34);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28);
+    outline: none;
+}
+
+.settings-thumb-frame {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.settings-thumb-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.settings-thumb:hover .settings-thumb-frame img,
+.settings-thumb:focus-visible .settings-thumb-frame img {
+    transform: scale(1.05);
+}
+
+.settings-thumb-label {
+    padding: 0 12px 12px 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Full-screen lightbox */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4vh 3vw;
+    background: rgba(6, 11, 24, 0.82);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    animation: lightbox-fade 0.2s ease forwards;
+}
+
+.lightbox[hidden] {
+    display: none;
+}
+
+@keyframes lightbox-fade {
+    to { opacity: 1; }
+}
+
+.lightbox-figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin: 0;
+    max-width: 100%;
+    max-height: 92vh;
+}
+
+.lightbox-stage {
+    max-width: 96vw;
+    max-height: 84vh;
+    overflow: auto;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.35);
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+}
+
+.lightbox-img {
+    display: block;
+    max-width: min(1400px, 94vw);
+    height: auto;
+    /* pan-y (not "none") keeps native touch-scrolling working for oversized
+       images, while still excluding pinch-zoom from the browser's own
+       handling so our JS pinch-to-zoom gets clean, uncontested touch events. */
+    touch-action: pan-y;
+    animation: lightbox-pop 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* While pinch-zoomed, transform is applied via JS (translate + scale). */
+.lightbox-img.is-zoomed {
+    animation: none;
+}
+
+@keyframes lightbox-pop {
+    from { transform: scale(0.94); opacity: 0.4; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.lightbox-caption {
+    margin: 0;
+    color: white;
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-close {
+    position: fixed;
+    top: 18px;
+    right: 22px;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    line-height: 1;
+    color: white;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 50%;
+    background: rgba(20, 30, 55, 0.6);
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.lightbox-close:hover {
+    background: rgba(40, 58, 100, 0.85);
+    transform: scale(1.06);
+}
+
+@media (max-width: 768px) {
+    /* Near-full-width cards on small screens, still centered. */
+    .settings-thumb {
+        flex-basis: min(100%, 380px);
+    }
+
+    /* On phones the lightbox takes over the whole screen: the stage goes
+       edge-to-edge (no card/border) and the image fits the full viewport, so
+       pinch-zoom expands across the entire screen instead of inside a box. */
+    .lightbox {
+        padding: 0;
+    }
+
+    .lightbox-figure {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        max-height: none;
+        gap: 0;
+        justify-content: center;
+    }
+
+    .lightbox-stage {
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        max-height: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+        overflow: hidden;
+        touch-action: none;
+    }
+
+    .lightbox-img {
+        /* Fit the whole image on screen at rest; pinch to zoom into detail. */
+        max-width: 100vw;
+        max-height: 100vh;
+        max-height: 100dvh;
+        width: auto;
+        touch-action: none;
+    }
+
+    .lightbox-caption {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: max(14px, env(safe-area-inset-bottom, 14px));
+        padding: 0 16px;
+        text-align: center;
+        pointer-events: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .settings-thumb,
+    .settings-thumb-frame img,
+    .lightbox,
+    .lightbox-img,
+    .lightbox-close {
+        transition: none;
+        animation: none;
+    }
 }
 
 /* Floating Ghosts Animation */
