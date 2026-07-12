@@ -50,12 +50,28 @@ body::before {
     z-index: -1;
 }
 
-.top-bar {
+/* The slot reserves a constant amount of vertical space (the bar's expanded
+   height) and is what actually sticks. The bar is absolutely positioned inside
+   it, so when the bar grows on hover it expands downward *over* the content
+   below instead of pushing it — the changelog/download scroll offset stays put.
+   pointer-events is disabled on the slot so the empty area beneath a minimized
+   bar doesn't intercept clicks on the content behind it. */
+.top-bar-slot {
     position: sticky;
     top: 8px;
     z-index: 25;
     width: min(1060px, calc(100% - 20px));
+    height: 77px;
     margin: 8px auto 0 auto;
+    pointer-events: none;
+}
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    pointer-events: auto;
     padding: 14px 18px;
     border-radius: 18px;
     display: grid;
@@ -690,7 +706,19 @@ body::before {
 
 /* Responsive design */
 @media (max-width: 768px) {
+    /* On mobile the bar never minimizes, so the slot decoupling isn't needed.
+       display: contents removes the slot's box entirely, so the bar sticks
+       relative to <body> (its natural, content-dependent height), exactly as
+       before the wrapper existed. */
+    .top-bar-slot {
+        display: contents;
+    }
+
     .top-bar {
+        position: sticky;
+        top: 8px;
+        z-index: 25;
+        margin: 8px auto 0 auto;
         width: calc(100% - 20px);
         padding: 10px 12px;
         grid-template-columns: minmax(0, 1fr) auto;
