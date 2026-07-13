@@ -712,8 +712,8 @@ function createGhosts(count = 18) {
     const area = containerWidth * containerHeight;
 
     // Keep density predictable across screen sizes.
-    const hardMaxGhosts = 26;
-    const maxGhostsByArea = Math.max(1, Math.floor(area / 65000));
+    const hardMaxGhosts = 18;
+    const maxGhostsByArea = Math.max(1, Math.floor(area / 90000));
     const targetGhostCount = Math.min(hardMaxGhosts, Math.max(0, Math.floor(count)), maxGhostsByArea);
 
     // Stable for a given viewport within the session, but different each load.
@@ -838,7 +838,7 @@ function createGhosts(count = 18) {
     }
 }
 
-createGhosts(26);
+createGhosts(18);
 
 // Re-lay the ghosts for the new viewport after a resize / orientation change so
 // they don't bunch up or clip. Debounced so we only rebuild once the resize
@@ -846,7 +846,7 @@ createGhosts(26);
 let ghostResizeTimer = null;
 window.addEventListener('resize', () => {
     window.clearTimeout(ghostResizeTimer);
-    ghostResizeTimer = window.setTimeout(() => createGhosts(26), 200);
+    ghostResizeTimer = window.setTimeout(() => createGhosts(18), 200);
 }, { passive: true });
 
 // --- Settings pages gallery + lightbox -------------------------------------
