@@ -37,6 +37,12 @@ const TOP_BAR_GHOST_GLITCH_MAX_DELAY_MS = 4500;
 const TOP_BAR_GHOST_GLITCH_DURATION_MS = 300;
 const TOP_BAR_GHOST_GLITCH_FRAME_INTERVAL_MS = 24;
 const VIEW_PANEL_TRANSITION_MS = 280;
+// A fresh random arrangement of the decorative ghosts on each page load. Stays
+// fixed for the session, so a resize only re-lays them for the new viewport.
+const GHOST_LAYOUT_SESSION_SEED = (Math.random() * 0xffffffff) >>> 0;
+// Two ghosts using the same sprite are kept at least this far apart (px) so the
+// same ghost doesn't visibly repeat in one spot.
+const GHOST_MIN_SAME_VARIANT_DISTANCE_PX = 280;
 
 let changelogRenderedEntries = [];
 let changelogSourceLabel = '';
@@ -209,6 +215,14 @@ function createSeededRandom(seed) {
         t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
+}
+
+function shuffleInPlace(array, random) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
 
 function formatReleaseDate(isoString) {
@@ -702,11 +716,12 @@ function createGhosts(count = 18) {
     const maxGhostsByArea = Math.max(1, Math.floor(area / 65000));
     const targetGhostCount = Math.min(hardMaxGhosts, Math.max(0, Math.floor(count)), maxGhostsByArea);
 
-    // Same viewport size => same ghost layout.
+    // Stable for a given viewport within the session, but different each load.
     const seed = (
         (Math.floor(containerWidth) * 73856093) ^
         (Math.floor(containerHeight) * 19349663) ^
-        (targetGhostCount * 83492791)
+        (targetGhostCount * 83492791) ^
+        GHOST_LAYOUT_SESSION_SEED
     ) >>> 0;
     const random = createSeededRandom(seed);
 
@@ -731,25 +746,57 @@ function createGhosts(count = 18) {
             const dx = ((candidateGhost.xPercent - ghost.xPercent) / 100) * containerWidth;
             const dy = ((candidateGhost.yPercent - ghost.yPercent) / 100) * containerHeight;
             const distance = Math.hypot(dx, dy);
-            const minDistance = (((candidateGhost.sizePx + ghost.sizePx) / 2) * 0.45 + 16) * spacingFactor;
+            const minDistance = (((candidateGhost.sizePx + ghost.sizePx) / 2) * 0.5 + 40) * spacingFactor;
 
             return distance < minDistance;
         });
     }
 
-    for (let i = 0; i < targetGhostCount; i++) {
-        const img = document.createElement('img');
-        const ghostFile = GHOST_VARIANT_FILES[Math.floor(random() * GHOST_VARIANT_FILES.length)];
-        img.src = `${GHOSTS_ASSET_BASE_PATH}/${ghostFile}`;
-        img.className = 'ghost';
+    // Even sprite usage via a reshuffled "bag": every sprite is used once in
+    // shuffled order before any repeats, so no single ghost dominates.
+    let variantBag = [];
+    function nextVariantFromBag() {
+        if (variantBag.length === 0) {
+            variantBag = shuffleInPlace(
+                Array.from({ length: GHOST_VARIANT_FILES.length }, (_, k) => k),
+                random
+            );
+        }
+        return variantBag.pop();
+    }
 
+    // Pick a sprite for a spot, preferring one not already used close by so the
+    // same ghost doesn't cluster.
+    function pickVariantIndex(xPercent, yPercent) {
+        const skipped = [];
+        let chosen = null;
+        for (let t = 0; t < GHOST_VARIANT_FILES.length && chosen === null; t++) {
+            const idx = nextVariantFromBag();
+            const clashesNearby = placedGhosts.some((ghost) => {
+                if (ghost.variantIndex !== idx) return false;
+                const dx = ((xPercent - ghost.xPercent) / 100) * containerWidth;
+                const dy = ((yPercent - ghost.yPercent) / 100) * containerHeight;
+                return Math.hypot(dx, dy) < GHOST_MIN_SAME_VARIANT_DISTANCE_PX;
+            });
+            if (clashesNearby) {
+                skipped.push(idx);
+            } else {
+                chosen = idx;
+            }
+        }
+        // Keep the skipped sprites in rotation for later spots.
+        for (const idx of skipped) {
+            variantBag.push(idx);
+        }
+        return chosen === null ? nextVariantFromBag() : chosen;
+    }
+
+    for (let i = 0; i < targetGhostCount; i++) {
         // 40px - 220px
         const size = Math.floor(random() * 180) + 40;
-        img.style.width = `${size}px`;
-        img.style.height = 'auto';
 
         const maxAttempts = 60;
-        let position = null;
+        let placed = null;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             const candidatePosition = getRandomPosition(size);
             const candidateGhost = {
@@ -761,24 +808,29 @@ function createGhosts(count = 18) {
             // Relax constraints slightly for late attempts to avoid starving placements.
             const spacingFactor = attempt > maxAttempts * 0.75 ? 0.85 : 1;
             if (!isTooClose(candidateGhost, spacingFactor)) {
-                position = candidatePosition;
+                placed = candidateGhost;
                 placedGhosts.push(candidateGhost);
                 break;
             }
         }
 
-        if (!position) {
+        if (!placed) {
             continue;
         }
 
-        img.style.left = `${position.xPercent}%`;
-        img.style.top = `${position.yPercent}%`;
-        img.style.position = 'absolute';
+        placed.variantIndex = pickVariantIndex(placed.xPercent, placed.yPercent);
 
+        const img = document.createElement('img');
+        img.className = 'ghost';
+        img.src = `${GHOSTS_ASSET_BASE_PATH}/${GHOST_VARIANT_FILES[placed.variantIndex]}`;
+        img.style.width = `${size}px`;
+        img.style.height = 'auto';
+        img.style.left = `${placed.xPercent}%`;
+        img.style.top = `${placed.yPercent}%`;
+        img.style.position = 'absolute';
         img.style.opacity = (random() * 0.15 + 0.03).toFixed(2);
         img.style.animationDuration = `${random() * 25 + 15}s`; // 15s - 40s
         img.style.animationDelay = `${random() * -20}s`;
-
         // Start rotated slightly for variety.
         img.style.transform = `translate(-50%, -50%) rotate(${random() * 360}deg)`;
 
