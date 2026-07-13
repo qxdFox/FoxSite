@@ -1070,14 +1070,18 @@ if (downloadViewRadio) {
 // listener runs before the radio's default activation, so `activeView` here
 // still reflects the view *before* this click — meaning it's only 'download'
 // when we were already on that view.
+function scrollToDownloadButton(behavior = 'smooth') {
+    const downloadButton = document.getElementById('download-button');
+    if (downloadButton) {
+        downloadButton.scrollIntoView({ behavior, block: 'center' });
+    }
+}
+
 const downloadViewLabel = document.querySelector('label[for="view-download"]');
 if (downloadViewLabel) {
     downloadViewLabel.addEventListener('click', () => {
         if (activeView === 'download') {
-            const downloadButton = document.getElementById('download-button');
-            if (downloadButton) {
-                downloadButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            scrollToDownloadButton('smooth');
         }
     });
 }
@@ -1094,6 +1098,11 @@ if (window.location.hash === '#changelog') {
     setActiveView('changelog', false, true);
 } else {
     setActiveView('download', false, true);
+    if (window.location.hash === '#download') {
+        // Shareable deep-link: start straight at the download button instead of
+        // the top of the page. Instant (not smooth) so it just "starts" there.
+        scrollToDownloadButton('auto');
+    }
 }
 
 initializeViewSwitcherIndicator();
