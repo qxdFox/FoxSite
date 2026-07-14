@@ -79,81 +79,40 @@ if (logo) {
     });
 }
 
-// Make the logo move up and down. The loop parks itself whenever the logo is
-// hidden (changelog view) and is restarted when the download view returns.
+// The static site keeps the logo interactive, but visual motion is handled by CSS.
 let angle = 0;
 let logoRafId = null;
 function moveLogo() {
-    if (!logo || logo.style.display === 'none') {
-        logoRafId = null;
-        return;
-    }
-
-    const offsetY = Math.sin(angle) * 10;
-    angle += 0.005;
-
-    const scale = logo.matches(':hover') ? 1.05 : 1;
-    logo.style.transform = `translateY(${offsetY}px) scale(${scale})`;
-
-    logoRafId = requestAnimationFrame(moveLogo);
+    logoRafId = null;
 }
 
 function startLogoAnimation() {
-    if (logo && logoRafId === null && logo.style.display !== 'none') {
-        logoRafId = requestAnimationFrame(moveLogo);
+    if (logo) {
+        logo.style.transform = '';
     }
 }
 
 startLogoAnimation();
 
-// Update the download card gradient based on cursor position. Coalesced into a
-// single rAF so we do at most one layout read + style write per frame, and only
-// while the download view is actually visible.
 let pointerX = 0;
 let pointerY = 0;
 let spotlightRafId = null;
 
 function paintDownloadSpotlight() {
     spotlightRafId = null;
-    if (!downloadBox || activeView !== 'download') return;
-
-    const rect = downloadBox.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-
-    const xPercent = ((pointerX - rect.left) / rect.width) * 100;
-    const yPercent = ((pointerY - rect.top) / rect.height) * 100;
-
-    // Translucent so the box blends with the page gradient behind it (paired
-    // with the box's backdrop blur for a frosted-glass look) at any scroll
-    // position. The spotlight center is more transparent than the edges, so the
-    // darker page background shows through there — a dark spot that follows the
-    // cursor, matching the original look.
-    const lightGradient = `radial-gradient(circle 250px at ${xPercent}% ${yPercent}%, rgba(51, 92, 226, 0.12), rgba(51, 92, 226, 0.45))`;
-    const darkGradient = `radial-gradient(circle 250px at ${xPercent}% ${yPercent}%, rgba(15, 30, 60, 0.12), rgba(15, 30, 60, 0.5))`;
-
-    downloadBox.style.background = darkModeQuery.matches ? darkGradient : lightGradient;
 }
 
 document.addEventListener('mousemove', (event) => {
-    if (!downloadBox || activeView !== 'download') return;
     pointerX = event.clientX;
     pointerY = event.clientY;
-    if (spotlightRafId === null) {
-        spotlightRafId = requestAnimationFrame(paintDownloadSpotlight);
-    }
 }, { passive: true });
 
-// Function to update the top bar, os box, and body background based on the current theme
 function updateTheme() {
-    const isDarkMode = darkModeQuery.matches;
-
     if (downloadBox) {
-        downloadBox.style.background = isDarkMode ? 'rgba(15, 30, 60, 0.5)' : 'rgba(51, 92, 226, 0.4)';
+        downloadBox.style.background = '';
     }
 
-    body.style.background = isDarkMode
-        ? 'linear-gradient(to bottom, rgb(15, 30, 60), rgb(15, 15, 30))'
-        : 'linear-gradient(to bottom, rgb(77, 116, 241), rgb(201, 166, 218))';
+    body.style.background = '';
 }
 
 // Initial update based on the current theme
@@ -703,6 +662,9 @@ async function loadChangelog() {
 function createGhosts(count = 18) {
     const container = document.getElementById('floating-ghosts') || document.querySelector('.floating-ghosts');
     if (!container) return;
+
+    container.innerHTML = '';
+    return;
 
     if (!GHOST_VARIANT_FILES.length) return;
 
