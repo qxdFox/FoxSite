@@ -512,9 +512,6 @@ textarea {
 }
 
 .release-heading {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
     margin-bottom: 10px;
 }
 
@@ -522,15 +519,16 @@ textarea {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px;
+    column-gap: 10px;
+    row-gap: 4px;
 }
 
 .release-title {
     margin: 0;
     color: var(--text);
-    font-size: 1.2rem;
+    font-size: 1.75rem;
     font-weight: 800;
-    line-height: 1.25;
+    line-height: 1;
 }
 
 .release-title a {
@@ -543,22 +541,35 @@ textarea {
 }
 
 .release-latest-badge {
-    display: inline-flex;
-    align-items: center;
-    min-height: 22px;
-    padding: 2px 8px;
+    display: inline-grid;
+    place-items: center;
+    align-self: center;
+    height: 24px;
+    padding: 0 9px;
     border: 1px solid rgba(0, 212, 170, 0.42);
     border-radius: var(--radius);
     background: rgba(0, 212, 170, 0.12);
     color: #7bdcc9;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 700;
+    line-height: 1;
+    transform: translateY(8px);
+    -webkit-transform: translateY(8px);
+    -moz-transform: translateY(8px);
+    -ms-transform: translateY(8px);
+    -o-transform: translateY(8px);
 }
 
 .release-date {
     margin: 0;
     color: var(--text-dim);
-    font-size: 0.86rem;
+    font-size: 0.9rem;
+    line-height: 1;
+    transform: translateY(8px);
+    -webkit-transform: translateY(8px);
+    -moz-transform: translateY(8px);
+    -ms-transform: translateY(8px);
+    -o-transform: translateY(8px);
 }
 
 .release-body {

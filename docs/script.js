@@ -596,8 +596,8 @@ async function buildReleaseEntryHtml(release, isLatest = false) {
                 <div class="release-title-row">
                     <h4 class="release-title"><a href="${escapeHtml(normalizedRelease.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(normalizedRelease.name)}</a></h4>
                     ${latestBadge}
+                    <p class="release-date">${escapeHtml(releaseDate)}</p>
                 </div>
-                <p class="release-date">${escapeHtml(releaseDate)}</p>
             </div>
             <div class="release-body">${renderedBody}</div>
         </article>
